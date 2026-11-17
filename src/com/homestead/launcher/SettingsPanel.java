@@ -894,7 +894,33 @@ public final class SettingsPanel {
             });
         }
 
-        // 3. Number buttons (0 ~ 9)
+        // 3. Streaming app buttons (APP 1 ~ 4)
+        p.addHeader(c.getString(R.string.set_remote_sec_app_keys));
+        final String[] appKeys = { "app_1", "app_2", "app_3", "app_4" };
+        final int[] appLabels = {
+                R.string.key_app_1,
+                R.string.key_app_2,
+                R.string.key_app_3,
+                R.string.key_app_4
+        };
+
+        for (int i = 0; i < appKeys.length; i++) {
+            final String keyId = appKeys[i];
+            final Panel.Row row = p.addRow(c.getString(appLabels[i]),
+                    RemoteActions.actionLabel(c, Prefs.keyAction(c, keyId)), null).opens();
+            row.setValueColor(0xFF8FA3B8);
+            row.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    host.showPanel(buildActionPicker(c, host, keyId, new Runnable() {
+                        public void run() {
+                            row.setValue(RemoteActions.actionLabel(c, Prefs.keyAction(c, keyId)));
+                        }
+                    }));
+                }
+            });
+        }
+
+        // 4. Number buttons (0 ~ 9)
         p.addHeader(c.getString(R.string.set_remote_sec_numbers));
         for (int i = 0; i <= 9; i++) {
             final int num = i;

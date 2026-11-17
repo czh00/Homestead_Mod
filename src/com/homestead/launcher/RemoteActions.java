@@ -103,6 +103,10 @@ public final class RemoteActions {
     public static String keyTitle(Context c, String keyId) {
         if ("ch_up".equals(keyId)) return c.getString(R.string.key_ch_up);
         if ("ch_down".equals(keyId)) return c.getString(R.string.key_ch_down);
+        if ("app_1".equals(keyId)) return c.getString(R.string.key_app_1);
+        if ("app_2".equals(keyId)) return c.getString(R.string.key_app_2);
+        if ("app_3".equals(keyId)) return c.getString(R.string.key_app_3);
+        if ("app_4".equals(keyId)) return c.getString(R.string.key_app_4);
         if ("red".equals(keyId)) return c.getString(R.string.key_color_red);
         if ("green".equals(keyId)) return c.getString(R.string.key_color_green);
         if ("yellow".equals(keyId)) return c.getString(R.string.key_color_yellow);
@@ -218,6 +222,14 @@ public final class RemoteActions {
         return -1;
     }
 
+    public static int getAppKeyIndex(int code) {
+        // Android KeyEvent.KEYCODE_APP_1 (287) to KEYCODE_APP_4 (290)
+        if (code >= 287 && code <= 290) {
+            return code - 286;
+        }
+        return -1;
+    }
+
     public static boolean isHandledKey(Context c, int keyCode) {
         if (isChannelUp(keyCode) && !Prefs.keyAction(c, "ch_up").isEmpty()) return true;
         if (isChannelDown(keyCode) && !Prefs.keyAction(c, "ch_down").isEmpty()) return true;
@@ -225,6 +237,9 @@ public final class RemoteActions {
         if (isGreenKey(keyCode) && !Prefs.keyAction(c, "green").isEmpty()) return true;
         if (isYellowKey(keyCode) && !Prefs.keyAction(c, "yellow").isEmpty()) return true;
         if (isBlueKey(keyCode) && !Prefs.keyAction(c, "blue").isEmpty()) return true;
+
+        int appIdx = getAppKeyIndex(keyCode);
+        if (appIdx >= 1 && !Prefs.keyAction(c, "app_" + appIdx).isEmpty()) return true;
 
         int num = getNumberFromKey(keyCode);
         if (num >= 0 && !Prefs.keyAction(c, "num_" + num).isEmpty()) return true;
@@ -302,7 +317,17 @@ public final class RemoteActions {
             }
         }
 
-        // 3. Number buttons (0 ~ 9)
+        // 3. Dedicated app buttons (APP 1 ~ 4 / Keycodes 287 ~ 290)
+        int appIdx = getAppKeyIndex(code);
+        if (appIdx >= 1) {
+            String act = Prefs.keyAction(c, "app_" + appIdx);
+            if (!act.isEmpty()) {
+                executeAction(c, act);
+                return true;
+            }
+        }
+
+        // 4. Number buttons (0 ~ 9)
         int num = getNumberFromKey(code);
         if (num >= 0) {
             String act = Prefs.keyAction(c, "num_" + num);
@@ -548,6 +573,9 @@ public final class RemoteActions {
         if (!Prefs.keyAction(c, "green").isEmpty()) return true;
         if (!Prefs.keyAction(c, "yellow").isEmpty()) return true;
         if (!Prefs.keyAction(c, "blue").isEmpty()) return true;
+        for (int i = 1; i <= 4; i++) {
+            if (!Prefs.keyAction(c, "app_" + i).isEmpty()) return true;
+        }
         for (int i = 0; i <= 9; i++) {
             if (!Prefs.keyAction(c, "num_" + i).isEmpty()) return true;
         }

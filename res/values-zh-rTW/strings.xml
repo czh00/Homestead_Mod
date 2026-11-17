@@ -85,6 +85,7 @@
   <string name="set_remote_help">自訂遙控器按鍵的功能，包括頻道鍵調整亮度、四色鍵與數字鍵快速動作。</string>
   <string name="set_remote_sec_channel">頻道鍵</string>
   <string name="set_remote_sec_colors">四色鍵</string>
+  <string name="set_remote_sec_app_keys">影視快捷鍵 (APP 1-4)</string>
   <string name="set_remote_sec_numbers">數字鍵 (0-9)</string>
   <string name="set_remote_sec_standard">標準功能</string>
   <string name="set_remote_sec_homestead">Homestead 設定項目</string>
@@ -104,6 +105,10 @@
   <string name="key_color_green">綠鍵</string>
   <string name="key_color_yellow">黃鍵</string>
   <string name="key_color_blue">藍鍵</string>
+  <string name="key_app_1">快捷鍵 1 (APP 1 / Netflix 等)</string>
+  <string name="key_app_2">快捷鍵 2 (APP 2 / Prime Video 等)</string>
+  <string name="key_app_3">快捷鍵 3 (APP 3 / Disney+ 等)</string>
+  <string name="key_app_4">快捷鍵 4 (APP 4 / YouTube 等)</string>
   <string name="key_num_title">數字鍵 %1$s</string>
   <string name="key_act_none">無動作</string>
   <string name="key_act_sleep">待機 / 休眠</string>
