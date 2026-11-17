@@ -80,6 +80,12 @@
   <string name="set_lang_help">Die Sprache der Homestead-Oberfläche. „Sprache des TVs“ folgt den Einstellungen des TVs.</string>
   <string name="set_simple">Einfacher Modus</string>
   <string name="set_simple_note">Für ein TV-Gerät, das für jemand anderen eingerichtet ist: Die Kacheln Einstellungen und TV-Zustand sind ausgeblendet (fünfmal MENÜ auf dem Startbildschirm drücken, um die Einstellungen zu öffnen), MENÜ und langes Drücken blenden keine Kacheln mehr aus, und es gibt keine Update-Hinweise; Updates lassen sich unten prüfen. Die Bereinigung bleibt unverändert.</string>
+  <string name="set_remote">Fernbedienungstasten</string>
+  <string name="set_remote_ch_brightness">Kanaltasten regeln Helligkeit</string>
+  <string name="set_remote_ch_brightness_help">Verwenden Sie Kanal +/- Tasten, um die Bildschirmhelligkeit anzupassen.</string>
+  <string name="set_remote_red_sleep">Rote Taste als Ein/Aus (Ruhezustand)</string>
+  <string name="set_remote_red_sleep_help">Drücken Sie die rote Taste, um den Fernseher in den Ruhezustand zu versetzen.</string>
+  <string name="hud_brightness">Helligkeit: %1$d%%</string>
   <string name="set_system">System</string>
   <string name="set_setup">Einrichtung</string>
   <string name="set_setup_done">fertig</string>
@@ -498,6 +504,7 @@
   <string name="bg_bing_mkt_es">Spanien</string>
   <string name="bg_bing_mkt_jp">Japan</string>
   <string name="bg_bing_mkt_cn">China</string>
+  <string name="bg_bing_mkt_tw">Taiwan</string>
   <string name="bg_bing_mkt_br">Brasilien</string>
   <string name="bg_bing_mkt_in">Indien</string>
   <string name="ls_drawn_dusk">Berge im Abendlicht</string>

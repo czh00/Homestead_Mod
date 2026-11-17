@@ -77,6 +77,12 @@
   <string name="set_lang_help">La langue des écrans de Homestead. « Langue de la TV » suit les réglages de la TV.</string>
   <string name="set_simple">Mode simple</string>
   <string name="set_simple_note">Pour une TV préparée pour quelqu\'un d\'autre : les tuiles Réglages et Santé de la TV sont masquées (appuyez cinq fois sur MENU sur l\'écran d\'accueil pour ouvrir les Réglages), MENU et l\'appui long ne masquent plus les tuiles, et aucune fenêtre de mise à jour ne s\'affiche ; recherchez les mises à jour ci-dessous. Le nettoyage n\'est pas modifié.</string>
+  <string name="set_remote">Touches de télécommande</string>
+  <string name="set_remote_ch_brightness">Touches de chaîne pour la luminosité</string>
+  <string name="set_remote_ch_brightness_help">Utilisez les touches Chaîne +/- pour régler la luminosité de l\'écran.</string>
+  <string name="set_remote_red_sleep">Touche rouge pour veille (sommeil)</string>
+  <string name="set_remote_red_sleep_help">Appuyez sur la touche rouge pour mettre la télévision en veille.</string>
+  <string name="hud_brightness">Luminosité : %1$d%%</string>
   <string name="set_system">Système</string>
   <string name="set_setup">Installation</string>
   <string name="set_setup_done">terminée</string>
@@ -494,6 +500,7 @@
   <string name="bg_bing_mkt_es">Espagne</string>
   <string name="bg_bing_mkt_jp">Japon</string>
   <string name="bg_bing_mkt_cn">Chine</string>
+  <string name="bg_bing_mkt_tw">Taïwan</string>
   <string name="bg_bing_mkt_br">Brésil</string>
   <string name="bg_bing_mkt_in">Inde</string>
   <string name="ls_drawn_dusk">Montagnes au crépuscule</string>

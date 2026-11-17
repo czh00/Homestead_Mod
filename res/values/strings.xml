@@ -80,6 +80,12 @@
   <string name="set_lang_help">The language of Homestead\'s own screens. \"TV language\" follows the TV\'s settings.</string>
   <string name="set_simple">Simple mode</string>
   <string name="set_simple_note">For a TV set up for someone else: the Settings and TV Health tiles are hidden (press MENU five times on the home screen to open Settings), MENU and long-press no longer hide tiles, and there are no update pop-ups; check for updates below. It does not change Debloat.</string>
+  <string name="set_remote">Remote buttons</string>
+  <string name="set_remote_ch_brightness">Channel buttons control brightness</string>
+  <string name="set_remote_ch_brightness_help">Use Channel +/- buttons on the remote to adjust screen brightness.</string>
+  <string name="set_remote_red_sleep">Red button for power (sleep)</string>
+  <string name="set_remote_red_sleep_help">Press the Red button on the remote to put the TV to sleep.</string>
+  <string name="hud_brightness">Brightness: %1$d%%</string>
   <string name="set_system">System</string>
   <string name="set_setup">Setup</string>
   <string name="set_setup_done">done</string>
@@ -498,6 +504,7 @@
   <string name="bg_bing_mkt_es">Spain</string>
   <string name="bg_bing_mkt_jp">Japan</string>
   <string name="bg_bing_mkt_cn">China</string>
+  <string name="bg_bing_mkt_tw">Taiwan</string>
   <string name="bg_bing_mkt_br">Brazil</string>
   <string name="bg_bing_mkt_in">India</string>
   <string name="ls_drawn_dusk">Mountains at dusk</string>

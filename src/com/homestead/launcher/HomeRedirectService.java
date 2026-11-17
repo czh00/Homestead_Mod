@@ -133,6 +133,10 @@ public class HomeRedirectService extends AccessibilityService {
         return true;
     }
 
+    public static HomeRedirectService getInstance() {
+        return instance;
+    }
+
     /** Start HomeKeyWatcher once READ_LOGS is granted; safe to call more than once. */
     public static void startHomeKeyWatch() {
         HomeRedirectService s = instance;
@@ -454,7 +458,19 @@ public class HomeRedirectService extends AccessibilityService {
         AdbBridge.init(this);
         bindWatcher();
         scheduleBootMaintenance();
+        RemoteActions.updateKeyFilter(this);
+        if (Prefs.channelBrightness(this)) {
+            RemoteActions.applyBrightness(this);
+        }
         Log.i(TAG, "HomeRedirectService connected");
+    }
+
+    @Override
+    protected boolean onKeyEvent(android.view.KeyEvent event) {
+        if (RemoteActions.handleKeyEvent(this, event)) {
+            return true;
+        }
+        return super.onKeyEvent(event);
     }
 
     /**

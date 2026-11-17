@@ -180,6 +180,14 @@ public class MainActivity extends Activity implements HomeGrid.Listener {
     @Override public void onPick(AppModel.Item it) { /* activity needs no dismissal */ }
 
     @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+        if (RemoteActions.handleKeyEvent(this, event)) {
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
     public void onBackPressed() {
         // A panel takes Back first; otherwise this is home and Back does nothing.
         if (home != null && home.isPanelOpen()) { home.closePanel(); return; }

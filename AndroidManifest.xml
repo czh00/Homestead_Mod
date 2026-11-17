@@ -16,6 +16,7 @@
   <!-- Development permission, granted via `pm grant`; lets TV Health apply settings
        fixes. Without it that page is read-only and shows the command instead. -->
   <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
+  <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
   <!-- Development permission, granted via `pm grant`; lets Home work while Amazon's home
        screen is already showing (HomeKeyWatcher). Without it that press does nothing. -->
   <uses-permission android:name="android.permission.READ_LOGS"/>

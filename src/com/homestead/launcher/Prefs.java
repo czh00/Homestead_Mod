@@ -70,6 +70,9 @@ public final class Prefs {
     private static final String K_LANGUAGE = "language";
     private static final String K_PINNED = "pinned";
     private static final String K_APPS_ONE = "apps_one_row";
+    private static final String K_REMOTE_CH_BRIGHTNESS = "remote_ch_brightness";
+    private static final String K_REMOTE_RED_SLEEP = "remote_red_sleep";
+    private static final String K_SCREEN_BRIGHTNESS = "screen_brightness";
 
     public static final int SORT_LAST_USED = 0;
     public static final int SORT_ALPHA = 1;
@@ -276,6 +279,27 @@ public final class Prefs {
     public static boolean liveTvFirst(Context c) { return sp(c).getBoolean(K_TV_FIRST, false); }
     public static void setLiveTvFirst(Context c, boolean v) {
         sp(c).edit().putBoolean(K_TV_FIRST, v).apply();
+    }
+
+    public static boolean channelBrightness(Context c) {
+        return sp(c).getBoolean(K_REMOTE_CH_BRIGHTNESS, false);
+    }
+    public static void setChannelBrightness(Context c, boolean on) {
+        sp(c).edit().putBoolean(K_REMOTE_CH_BRIGHTNESS, on).apply();
+    }
+
+    public static boolean redKeySleep(Context c) {
+        return sp(c).getBoolean(K_REMOTE_RED_SLEEP, false);
+    }
+    public static void setRedKeySleep(Context c, boolean on) {
+        sp(c).edit().putBoolean(K_REMOTE_RED_SLEEP, on).apply();
+    }
+
+    public static int screenBrightness(Context c) {
+        return sp(c).getInt(K_SCREEN_BRIGHTNESS, 100);
+    }
+    public static void setScreenBrightness(Context c, int percent) {
+        sp(c).edit().putInt(K_SCREEN_BRIGHTNESS, percent).apply();
     }
 
     /** "Good evening" at the top left. Off by default. */

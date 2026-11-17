@@ -207,6 +207,7 @@ public class HomeGrid implements SettingsPanel.Host {
         // key listener on the root would never fire.
         root = new FrameLayout(c) {
             @Override public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+                if (RemoteActions.handleKeyEvent(ctx, e)) return true;
                 if (e.getAction() == android.view.KeyEvent.ACTION_UP) {
                     lastKey = e.getKeyCode();
                     lastKeyDevice = e.getDeviceId();

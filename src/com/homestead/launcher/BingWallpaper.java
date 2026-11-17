@@ -61,7 +61,7 @@ final class BingWallpaper {
     /** Markets Bing provides regional daily images for; "" (the default) follows the TV. */
     private static final String[] MARKETS = {
         "", "en-US", "en-GB", "en-CA", "fr-CA", "de-DE", "fr-FR",
-        "it-IT", "es-ES", "ja-JP", "zh-CN", "pt-BR", "en-IN"
+        "it-IT", "es-ES", "ja-JP", "zh-CN", "zh-TW", "pt-BR", "en-IN"
     };
 
     // Accessed from the main thread: HomeGrid and settings both invoke refresh from there.
@@ -113,6 +113,7 @@ final class BingWallpaper {
         if ("es-ES".equals(m)) return c.getString(R.string.bg_bing_mkt_es);
         if ("ja-JP".equals(m)) return c.getString(R.string.bg_bing_mkt_jp);
         if ("zh-CN".equals(m)) return c.getString(R.string.bg_bing_mkt_cn);
+        if ("zh-TW".equals(m)) return c.getString(R.string.bg_bing_mkt_tw);
         if ("pt-BR".equals(m)) return c.getString(R.string.bg_bing_mkt_br);
         if ("en-IN".equals(m)) return c.getString(R.string.bg_bing_mkt_in);
         return m;
@@ -136,7 +137,12 @@ final class BingWallpaper {
         if ("de".equalsIgnoreCase(language)) return "de-DE";
         if ("fr".equalsIgnoreCase(language)) return "fr-FR";
         if ("ja".equalsIgnoreCase(language)) return "ja-JP";
-        if ("zh".equalsIgnoreCase(language)) return "zh-CN";
+        if ("zh".equalsIgnoreCase(language)) {
+            if ("TW".equalsIgnoreCase(country) || "HK".equalsIgnoreCase(country) || "MO".equalsIgnoreCase(country)) {
+                return "zh-TW";
+            }
+            return "zh-CN";
+        }
         if ("it".equalsIgnoreCase(language)) return "it-IT";
         if ("es".equalsIgnoreCase(language)) return "es-ES";
         if ("pt".equalsIgnoreCase(language)) return "pt-BR";

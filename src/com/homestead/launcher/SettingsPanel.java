@@ -68,18 +68,12 @@ public final class SettingsPanel {
             public void onClick(View v) { host.showPanel(buildLook(c, host, summaries)); }
         });
 
-        final Panel.Row lang = p.addRow(c.getString(R.string.set_lang), Lang.label(c), null);
+        final Panel.Row lang = p.addRow(c.getString(R.string.set_lang), Lang.label(c), null).opens();
         lang.setValueColor(0xFF8FA3B8);
         lang.setHelp(c.getString(R.string.set_lang_help));
         lang.cell.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Prefs.setLanguage(c, Lang.next(c));
-                HomeRedirectService.languageChanged(c);
-                // This page was drawn in the old language; draw it again in the new one, back
-                // on this row.
-                host.closePanel();
-                focusLanguage = true;
-                host.showPanel(build(c, host));
+                host.showPanel(buildLanguages(c, host));
             }
         });
         if (focusLanguage) {
@@ -102,6 +96,33 @@ public final class SettingsPanel {
             }
         });
         p.addNote(c.getString(R.string.set_simple_note));
+
+        p.addHeader(c.getString(R.string.set_remote));
+
+        final Panel.Row chBright = p.addRow(c.getString(R.string.set_remote_ch_brightness),
+                onOff(Prefs.channelBrightness(c)), null).asSwitch();
+        chBright.setHelp(c.getString(R.string.set_remote_ch_brightness_help));
+        chBright.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                boolean n = !Prefs.channelBrightness(c);
+                Prefs.setChannelBrightness(c, n);
+                chBright.setValue(onOff(n));
+                RemoteActions.updateKeyFilter(c);
+                if (n) RemoteActions.applyBrightness(c);
+            }
+        });
+
+        final Panel.Row redSleep = p.addRow(c.getString(R.string.set_remote_red_sleep),
+                onOff(Prefs.redKeySleep(c)), null).asSwitch();
+        redSleep.setHelp(c.getString(R.string.set_remote_red_sleep_help));
+        redSleep.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                boolean n = !Prefs.redKeySleep(c);
+                Prefs.setRedKeySleep(c, n);
+                redSleep.setValue(onOff(n));
+                RemoteActions.updateKeyFilter(c);
+            }
+        });
 
         p.addHeader(c.getString(R.string.set_system));
 
@@ -734,6 +755,65 @@ public final class SettingsPanel {
         d.setCornerRadius(AppModel.dp(c, 5));
         d.setStroke(AppModel.dp(c, 1), 0x59FFFFFF);
         return d;
+    }
+
+    // ---------------------------------------------------------------- language
+
+    /**
+     * The languages Homestead offers, the TV's own first. Selecting one applies it
+     * at once and rebuilds Settings in the new language; the one in use is marked.
+     */
+    private static View buildLanguages(final Context c, final Host host) {
+        final Panel p = new Panel(c, c.getString(R.string.set_lang),
+                c.getString(R.string.set_lang_help), Panel.SHEET);
+
+        final List<Panel.Row> rows = new ArrayList<Panel.Row>();
+        final List<String> codes = new ArrayList<String>();
+        final Runnable inUse = new Runnable() {
+            public void run() {
+                String now = Prefs.language(c);
+                for (int i = 0; i < rows.size(); i++) {
+                    boolean on = codes.get(i).equals(now);
+                    rows.get(i).setValue(on ? c.getString(R.string.bg_in_use) : "");
+                    rows.get(i).setValueColor(on ? IN_USE : 0xFF8FA3B8);
+                }
+            }
+        };
+
+        for (int i = 0; i < Lang.CODES.length; i++) {
+            final String code = Lang.CODES[i];
+            final Panel.Row r = p.addRow(Lang.label(c, code), "", null);
+            r.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    if (!code.equals(Prefs.language(c))) {
+                        Prefs.setLanguage(c, code);
+                        HomeRedirectService.languageChanged(c);
+                        host.closePanel();
+                        host.closePanel();
+                        focusLanguage = true;
+                        host.showPanel(build(c, host));
+                        return;
+                    }
+                    host.closePanel();
+                }
+            });
+            rows.add(r);
+            codes.add(code);
+        }
+        inUse.run();
+
+        p.addRow(c.getString(R.string.set_back), "", new Runnable() {
+            public void run() { host.closePanel(); }
+        });
+
+        int idx = codes.indexOf(Prefs.language(c));
+        final View start = rows.get(Math.max(0, idx)).cell;
+        p.root.post(new Runnable() {
+            public void run() {
+                p.root.post(new Runnable() { public void run() { start.requestFocus(); } });
+            }
+        });
+        return p.root;
     }
 
     // ---------------------------------------------------------------- bing region
