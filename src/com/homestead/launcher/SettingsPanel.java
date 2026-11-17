@@ -820,16 +820,29 @@ public final class SettingsPanel {
 
         // 1. Channel buttons
         p.addHeader(c.getString(R.string.set_remote_sec_channel));
-        final Panel.Row chBright = p.addRow(c.getString(R.string.set_remote_ch_brightness),
-                onOff(Prefs.channelBrightness(c)), null).asSwitch();
-        chBright.setHelp(c.getString(R.string.set_remote_ch_brightness_help));
-        chBright.cell.setOnClickListener(new View.OnClickListener() {
+        final Panel.Row chUpRow = p.addRow(c.getString(R.string.key_ch_up),
+                RemoteActions.actionLabel(c, Prefs.keyAction(c, "ch_up")), null).opens();
+        chUpRow.setValueColor(0xFF8FA3B8);
+        chUpRow.cell.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                boolean n = !Prefs.channelBrightness(c);
-                Prefs.setChannelBrightness(c, n);
-                chBright.setValue(onOff(n));
-                RemoteActions.updateKeyFilter(c);
-                if (n) RemoteActions.applyBrightness(c);
+                host.showPanel(buildActionPicker(c, host, "ch_up", new Runnable() {
+                    public void run() {
+                        chUpRow.setValue(RemoteActions.actionLabel(c, Prefs.keyAction(c, "ch_up")));
+                    }
+                }));
+            }
+        });
+
+        final Panel.Row chDownRow = p.addRow(c.getString(R.string.key_ch_down),
+                RemoteActions.actionLabel(c, Prefs.keyAction(c, "ch_down")), null).opens();
+        chDownRow.setValueColor(0xFF8FA3B8);
+        chDownRow.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                host.showPanel(buildActionPicker(c, host, "ch_down", new Runnable() {
+                    public void run() {
+                        chDownRow.setValue(RemoteActions.actionLabel(c, Prefs.keyAction(c, "ch_down")));
+                    }
+                }));
             }
         });
 

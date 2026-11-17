@@ -96,6 +96,8 @@
   <string name="set_remote_last_key">最後接收到的按鍵</string>
   <string name="set_remote_none">尚未按鍵（請按遙控器測試）</string>
   <string name="set_remote_note">按遙控器按鍵時上方會即時顯示偵測到的鍵名與鍵值。若在其他 App 中無效，請至 Fire TV 設定 -&gt; 無障礙功能中將 Homestead 關閉再重新開啟。</string>
+  <string name="key_ch_up">頻道上鍵 (CH+)</string>
+  <string name="key_ch_down">頻道下鍵 (CH-)</string>
   <string name="key_color_red">紅鍵</string>
   <string name="key_color_green">綠鍵</string>
   <string name="key_color_yellow">黃鍵</string>

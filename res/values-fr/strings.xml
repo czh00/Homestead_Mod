@@ -93,6 +93,8 @@
   <string name="set_remote_last_key">Dernière touche détectée</string>
   <string name="set_remote_none">Aucune (appuyer pour tester)</string>
   <string name="set_remote_note">Les touches détectées s\'affichent ci-dessus en temps réel. Si les touches ne répondent pas dans d\'autres applications, désactivez puis réactivez Homestead dans Paramètres Fire TV -&gt; Accessibilité.</string>
+  <string name="key_ch_up">Chaîne + (CH+)</string>
+  <string name="key_ch_down">Chaîne - (CH-)</string>
   <string name="key_color_red">Touche rouge</string>
   <string name="key_color_green">Touche verte</string>
   <string name="key_color_yellow">Touche jaune</string>

@@ -463,7 +463,7 @@ public class HomeRedirectService extends AccessibilityService {
         bindWatcher();
         scheduleBootMaintenance();
         RemoteActions.updateKeyFilter(this);
-        if (Prefs.channelBrightness(this)) {
+        if (Prefs.screenBrightness(this) < 100) {
             RemoteActions.applyBrightness(this);
         }
         Log.i(TAG, "HomeRedirectService connected");

@@ -282,15 +282,18 @@ public final class Prefs {
     }
 
     public static boolean channelBrightness(Context c) {
-        return sp(c).getBoolean(K_REMOTE_CH_BRIGHTNESS, false);
+        return !"".equals(keyAction(c, "ch_up")) || !"".equals(keyAction(c, "ch_down"));
     }
     public static void setChannelBrightness(Context c, boolean on) {
-        sp(c).edit().putBoolean(K_REMOTE_CH_BRIGHTNESS, on).apply();
+        setKeyAction(c, "ch_up", on ? "brightness_up" : "");
+        setKeyAction(c, "ch_down", on ? "brightness_down" : "");
     }
 
     public static String keyAction(Context c, String keyId) {
-        // Red defaults to "sleep" to preserve original behavior
-        String def = "red".equals(keyId) ? "sleep" : "";
+        String def = "";
+        if ("ch_up".equals(keyId)) def = "brightness_up";
+        else if ("ch_down".equals(keyId)) def = "brightness_down";
+        else if ("red".equals(keyId)) def = "sleep";
         return sp(c).getString("remote_action_" + keyId, def);
     }
     public static void setKeyAction(Context c, String keyId, String action) {

@@ -101,6 +101,8 @@ public final class RemoteActions {
     }
 
     public static String keyTitle(Context c, String keyId) {
+        if ("ch_up".equals(keyId)) return c.getString(R.string.key_ch_up);
+        if ("ch_down".equals(keyId)) return c.getString(R.string.key_ch_down);
         if ("red".equals(keyId)) return c.getString(R.string.key_color_red);
         if ("green".equals(keyId)) return c.getString(R.string.key_color_green);
         if ("yellow".equals(keyId)) return c.getString(R.string.key_color_yellow);
@@ -147,18 +149,12 @@ public final class RemoteActions {
 
     public static boolean isChannelUp(int code) {
         return code == KeyEvent.KEYCODE_CHANNEL_UP
-                || code == KeyEvent.KEYCODE_PAGE_UP
-                || code == KeyEvent.KEYCODE_MEDIA_NEXT
-                || code == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
-                || code == KeyEvent.KEYCODE_BUTTON_R1;
+                || code == KeyEvent.KEYCODE_PAGE_UP;
     }
 
     public static boolean isChannelDown(int code) {
         return code == KeyEvent.KEYCODE_CHANNEL_DOWN
-                || code == KeyEvent.KEYCODE_PAGE_DOWN
-                || code == KeyEvent.KEYCODE_MEDIA_PREVIOUS
-                || code == KeyEvent.KEYCODE_MEDIA_REWIND
-                || code == KeyEvent.KEYCODE_BUTTON_L1;
+                || code == KeyEvent.KEYCODE_PAGE_DOWN;
     }
 
     public static boolean isRedKey(int code) {
@@ -209,11 +205,8 @@ public final class RemoteActions {
     }
 
     public static boolean isHandledKey(Context c, int keyCode) {
-        if (Prefs.channelBrightness(c)) {
-            if (isChannelUp(keyCode) || isChannelDown(keyCode)) {
-                return true;
-            }
-        }
+        if (isChannelUp(keyCode) && !Prefs.keyAction(c, "ch_up").isEmpty()) return true;
+        if (isChannelDown(keyCode) && !Prefs.keyAction(c, "ch_down").isEmpty()) return true;
         if (isRedKey(keyCode) && !Prefs.keyAction(c, "red").isEmpty()) return true;
         if (isGreenKey(keyCode) && !Prefs.keyAction(c, "green").isEmpty()) return true;
         if (isYellowKey(keyCode) && !Prefs.keyAction(c, "yellow").isEmpty()) return true;
@@ -242,19 +235,24 @@ public final class RemoteActions {
         }
 
         // 1. Channel buttons
-        if (Prefs.channelBrightness(c)) {
-            long now = SystemClock.uptimeMillis();
-            if (isChannelUp(code)) {
+        if (isChannelUp(code)) {
+            String act = Prefs.keyAction(c, "ch_up");
+            if (!act.isEmpty()) {
+                long now = SystemClock.uptimeMillis();
                 if (now - lastAdjustTime >= ADJUST_DEBOUNCE_MS) {
                     lastAdjustTime = now;
-                    adjustBrightness(c, 10);
+                    executeAction(c, act);
                 }
                 return true;
             }
-            if (isChannelDown(code)) {
+        }
+        if (isChannelDown(code)) {
+            String act = Prefs.keyAction(c, "ch_down");
+            if (!act.isEmpty()) {
+                long now = SystemClock.uptimeMillis();
                 if (now - lastAdjustTime >= ADJUST_DEBOUNCE_MS) {
                     lastAdjustTime = now;
-                    adjustBrightness(c, -10);
+                    executeAction(c, act);
                 }
                 return true;
             }
@@ -506,7 +504,8 @@ public final class RemoteActions {
     }
 
     public static boolean hasAnyCustomKey(Context c) {
-        if (Prefs.channelBrightness(c)) return true;
+        if (!Prefs.keyAction(c, "ch_up").isEmpty()) return true;
+        if (!Prefs.keyAction(c, "ch_down").isEmpty()) return true;
         if (!Prefs.keyAction(c, "red").isEmpty()) return true;
         if (!Prefs.keyAction(c, "green").isEmpty()) return true;
         if (!Prefs.keyAction(c, "yellow").isEmpty()) return true;

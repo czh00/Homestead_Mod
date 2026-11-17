@@ -96,6 +96,8 @@
   <string name="set_remote_last_key">Zuletzt erkannte Taste</string>
   <string name="set_remote_none">Keine (Fernbedienung drücken)</string>
   <string name="set_remote_note">Erkannte Tasten werden oben in Echtzeit angezeigt. Falls Tasten in anderen Apps nicht reagieren, schalten Sie Homestead unter Fire TV Einstellungen -&gt; Barrierefreiheit aus und wieder ein.</string>
+  <string name="key_ch_up">Kanal aufwärts (CH+)</string>
+  <string name="key_ch_down">Kanal abwärts (CH-)</string>
   <string name="key_color_red">Rote Taste</string>
   <string name="key_color_green">Grüne Taste</string>
   <string name="key_color_yellow">Gelbe Taste</string>
