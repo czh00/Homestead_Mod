@@ -192,6 +192,8 @@ public class MainActivity extends Activity implements HomeGrid.Listener {
         if (home != null) home.updateClock();
         if (Prefs.screenBrightness(this) < 100) {
             RemoteActions.applyBrightness(this);
+        } else {
+            RemoteActions.removeGlobalDimmer();
         }
 
         Intent curIntent = getIntent();

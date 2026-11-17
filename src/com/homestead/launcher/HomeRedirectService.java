@@ -465,6 +465,8 @@ public class HomeRedirectService extends AccessibilityService {
         RemoteActions.updateKeyFilter(this);
         if (Prefs.screenBrightness(this) < 100) {
             RemoteActions.applyBrightness(this);
+        } else {
+            RemoteActions.removeGlobalDimmer();
         }
         Log.i(TAG, "HomeRedirectService connected");
     }

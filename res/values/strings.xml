@@ -150,6 +150,7 @@
   <string name="key_act_bright_down">Brightness -</string>
   <string name="key_act_open_app">Open %1$s</string>
   <string name="hud_brightness">Brightness: %1$d%%</string>
+  <string name="hud_brightness_max">Brightness: 100% (Mask Off)</string>
   <string name="sleep_hint">TV sleeping (press any key to wake)</string>
   <string name="set_system">System</string>
   <string name="set_setup">Setup</string>

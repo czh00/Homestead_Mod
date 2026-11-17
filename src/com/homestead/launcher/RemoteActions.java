@@ -619,16 +619,19 @@ public final class RemoteActions {
                 if (act != null && !act.isFinishing()) {
                     try {
                         WindowManager.LayoutParams lp = act.getWindow().getAttributes();
-                        lp.screenBrightness = level / 100f;
+                        lp.screenBrightness = (level >= 100)
+                                ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                                : (level / 100f);
                         act.getWindow().setAttributes(lp);
                     } catch (Throwable ignored) { }
                 }
 
                 // 4. Update or clear dimmer overlay based on brightness mode
-                if (Prefs.isBrightnessModeOverlay(c)) {
-                    updateGlobalDimmer(c, level);
-                } else {
+                // At 100% (max brightness), the mask is completely removed to protect screenshots and HDR/Dolby Vision playback!
+                if (level >= 100 || !Prefs.isBrightnessModeOverlay(c)) {
                     removeGlobalDimmer();
+                } else {
+                    updateGlobalDimmer(c, level);
                 }
             }
         });
@@ -636,16 +639,35 @@ public final class RemoteActions {
 
     public static void removeGlobalDimmer() {
         if (dimmerView != null) {
-            HomeRedirectService s = HomeRedirectService.getInstance();
-            if (s != null) {
-                WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
-                if (wm != null) {
-                    try {
-                        wm.removeView(dimmerView);
-                    } catch (Throwable ignored) { }
+            try {
+                dimmerView.setVisibility(View.GONE);
+                HomeRedirectService s = HomeRedirectService.getInstance();
+                if (s != null) {
+                    WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
+                    if (wm != null) {
+                        try {
+                            wm.removeView(dimmerView);
+                        } catch (Throwable ignored) { }
+                    }
                 }
-            }
+                ViewParent parent = dimmerView.getParent();
+                if (parent instanceof ViewGroup) {
+                    ((ViewGroup) parent).removeView(dimmerView);
+                }
+            } catch (Throwable ignored) { }
             dimmerView = null;
+        }
+
+        // Also ensure active launcher activity window attributes have no override
+        MainActivity act = HomeRedirectService.getLiveActivity();
+        if (act != null && !act.isFinishing()) {
+            try {
+                WindowManager.LayoutParams lp = act.getWindow().getAttributes();
+                if (lp.screenBrightness != WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE) {
+                    lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+                    act.getWindow().setAttributes(lp);
+                }
+            } catch (Throwable ignored) { }
         }
     }
 
@@ -889,7 +911,11 @@ public final class RemoteActions {
 
     private static void updateHudContent(Context c, int level) {
         if (hudText != null) {
-            hudText.setText(c.getString(R.string.hud_brightness, level));
+            if (level >= 100) {
+                hudText.setText(c.getString(R.string.hud_brightness_max));
+            } else {
+                hudText.setText(c.getString(R.string.hud_brightness, level));
+            }
         }
         if (hudBarFill != null) {
             ViewGroup.LayoutParams p = hudBarFill.getLayoutParams();
