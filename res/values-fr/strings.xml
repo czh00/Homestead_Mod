@@ -100,8 +100,13 @@
   <string name="key_num_title">Touche %1$s</string>
   <string name="key_act_none">Aucune</string>
   <string name="key_act_sleep">Mise en veille</string>
-  <string name="key_act_inputs">Sources TV natives</string>
-  <string name="key_act_input_picker">Sélecteur d\'entrées</string>
+  <string name="key_act_inputs">Menu des sources d\'entrée</string>
+  <string name="key_act_cycle_inputs">Source suivante</string>
+  <string name="key_act_hdmi_1">Basculer sur HDMI 1</string>
+  <string name="key_act_hdmi_2">Basculer sur HDMI 2</string>
+  <string name="key_act_hdmi_3">Basculer sur HDMI 3</string>
+  <string name="key_act_hdmi_4">Basculer sur HDMI 4</string>
+  <string name="key_act_livetv">TV en direct</string>
   <string name="input_chooser_title">Sources d\'entrée</string>
   <string name="input_chooser_help">Sélectionnez une source d\'entrée</string>
   <string name="input_connected">Connecté</string>

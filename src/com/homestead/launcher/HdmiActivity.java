@@ -14,6 +14,7 @@ package com.homestead.launcher;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -37,6 +38,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -195,10 +197,7 @@ public class HdmiActivity extends Activity {
      * the input in the TvView instead.
      */
     private boolean openWithKamino(String inputId) {
-        boolean listed = false;
-        for (String b : KAMINO_BOARDS) if (inputId.startsWith(b)) listed = true;
-        if (!listed) return false;
-        int type = kaminoInputType(inputId);
+        int type = kaminoInputType(this, inputId);
         if (type < 0) return false;
         Intent i = new Intent().setComponent(new ComponentName(KAMINO_PACKAGE, KAMINO_SERVICE));
         try {
@@ -215,67 +214,44 @@ public class HdmiActivity extends Activity {
 
     /**
      * Amazon's input number for KaminoInputSwitchService, which follows the input's type and
-     * name, not its hardware id: HDMI 1 = 2, HDMI 2 = 3, HDMI 3 = 4, HDMI 4 = 10, composite =
-     * 11, component = 12, VGA = 13. A device found over HDMI-CEC uses its parent port. -1 when
-     * the input matches none of these.
+     * name: HDMI 1 = 2, HDMI 2 = 3, HDMI 3 = 4, HDMI 4 = 10, composite = 11, component = 12, VGA = 13.
      */
-    private int kaminoInputType(String inputId) {
+    public static int kaminoInputType(Context ctx, String inputId) {
+        if (inputId == null) return -1;
         try {
-            TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
+            TvInputManager tim = (TvInputManager) ctx.getSystemService(TV_INPUT_SERVICE);
             TvInputInfo info = tim == null ? null : tim.getTvInputInfo(inputId);
             if (info != null && info.getParentId() != null) info = tim.getTvInputInfo(info.getParentId());
-            if (info == null) return -1;
-            switch (info.getType()) {
-                case TvInputInfo.TYPE_COMPOSITE: return 11;
-                case TvInputInfo.TYPE_COMPONENT: return 12;
-                case TvInputInfo.TYPE_VGA: return 13;
-                case TvInputInfo.TYPE_HDMI: break;
-                default: return -1;
+            if (info != null) {
+                switch (info.getType()) {
+                    case TvInputInfo.TYPE_COMPOSITE: return 11;
+                    case TvInputInfo.TYPE_COMPONENT: return 12;
+                    case TvInputInfo.TYPE_VGA: return 13;
+                }
             }
-            CharSequence label = info.loadLabel(this);
-            Matcher m = HDMI_LABEL.matcher(label == null ? "" : label);
-            if (!m.find()) return -1;
-            switch (Integer.parseInt(m.group(1))) {
-                case 1: return 2;
-                case 2: return 3;
-                case 3: return 4;
-                case 4: return 10;
-                default: return -1;
-            }
-        } catch (Throwable t) {
-            return -1;
-        }
+            CharSequence label = (info != null) ? info.loadLabel(ctx) : null;
+            String text = ((label == null ? "" : label.toString()) + " " + inputId).toUpperCase(Locale.US);
+            if (text.contains("HDMI 1") || text.contains("HDMI1") || text.contains("HW1") || text.contains("PORT1") || text.contains("PORT 1")) return 2;
+            if (text.contains("HDMI 2") || text.contains("HDMI2") || text.contains("HW2") || text.contains("PORT2") || text.contains("PORT 2")) return 3;
+            if (text.contains("HDMI 3") || text.contains("HDMI3") || text.contains("HW3") || text.contains("PORT3") || text.contains("PORT 3")) return 4;
+            if (text.contains("HDMI 4") || text.contains("HDMI4") || text.contains("HW4") || text.contains("PORT4") || text.contains("PORT 4")) return 10;
+        } catch (Throwable ignored) { }
+        return -1;
     }
 
-    /** Hand off to Amazon's Inputs screen, standing the Home redirect down first. */
+    /** On tuning failure or timeout, show message and close cleanly without bouncing to Amazon launcher. */
     private void fallback() {
         if (isFinishing()) return;
         settled = true;
         handler.removeCallbacks(timeout);
-        // Amazon's Inputs screen lives in its launcher; with that switched off there is
-        // nowhere to hand over to, so say so instead of closing on a blank screen.
-        if (!AppModel.amazonLauncherOn(this)) {
-            Log.w(TAG, "fallback: Amazon's launcher is off, no Inputs screen");
-            if (status != null) {
-                status.setVisibility(View.VISIBLE);
-                status.setText(R.string.hdmi_open_failed);
-            }
-            handler.postDelayed(new Runnable() {
-                public void run() { finish(); }
-            }, 4000L);
-            return;
+        Log.w(TAG, "fallback: HDMI tune failed or timed out");
+        if (status != null) {
+            status.setVisibility(View.VISIBLE);
+            status.setText(R.string.hdmi_open_failed);
         }
-        try {
-            HomeRedirectService.suspend(15000L);
-            Intent i = new Intent("com.amazon.tv.action.NAVIGATE_TO_INPUTS");
-            // Pinned so no other app that declares this action can receive it.
-            i.setPackage("com.amazon.tv.launcher");
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(i);
-        } catch (Throwable t) {
-            Log.w(TAG, "fallback failed: " + t);
-        }
-        finish();
+        handler.postDelayed(new Runnable() {
+            public void run() { finish(); }
+        }, 3000L);
     }
 
     @Override

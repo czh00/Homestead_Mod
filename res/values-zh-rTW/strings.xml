@@ -103,8 +103,13 @@
   <string name="key_num_title">數字鍵 %1$s</string>
   <string name="key_act_none">無動作</string>
   <string name="key_act_sleep">待機 / 休眠</string>
-  <string name="key_act_inputs">原生訊號源選單</string>
-  <string name="key_act_input_picker">訊號源快速切換</string>
+  <string name="key_act_inputs">輸入訊號源選單</string>
+  <string name="key_act_cycle_inputs">循環切換訊號源</string>
+  <string name="key_act_hdmi_1">切換至 HDMI 1</string>
+  <string name="key_act_hdmi_2">切換至 HDMI 2</string>
+  <string name="key_act_hdmi_3">切換至 HDMI 3</string>
+  <string name="key_act_hdmi_4">切換至 HDMI 4</string>
+  <string name="key_act_livetv">即時電視</string>
   <string name="input_chooser_title">輸入訊號源</string>
   <string name="input_chooser_help">選擇要切換的輸入訊號</string>
   <string name="input_connected">已連線</string>

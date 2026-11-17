@@ -55,6 +55,8 @@ public class InputChooserActivity extends Activity {
             }
         });
 
+        Panel.Row firstRow = null;
+
         // 1. Live TV if available on this TV
         if (AppModel.liveTvAvailable(this)) {
             Panel.Row r = p.addRow(getString(R.string.home_livetv), "", new Runnable() {
@@ -72,6 +74,7 @@ public class InputChooserActivity extends Activity {
                 }
             });
             r.setHelp(getString(R.string.home_sec_inputs));
+            if (firstRow == null) firstRow = r;
         }
 
         // 2. Hardware Passthrough Inputs (HDMI 1, HDMI 2, HDMI 3, HDMI 4, Composite, etc.)
@@ -102,6 +105,22 @@ public class InputChooserActivity extends Activity {
                         Panel.Row r = p.addRow(label, status, new Runnable() {
                             @Override
                             public void run() {
+                                // 1. Try KaminoInputSwitchService directly
+                                int type = HdmiActivity.kaminoInputType(InputChooserActivity.this, inputId);
+                                if (type >= 0) {
+                                    try {
+                                        Intent kaminoIntent = new Intent().setComponent(new ComponentName(
+                                                "com.amazon.tv.inputpreference.service",
+                                                "com.amazon.tv.inputpreference.service.KaminoInputSwitchService"));
+                                        kaminoIntent.putExtra("inputType", type);
+                                        if (startService(kaminoIntent) != null) {
+                                            finish();
+                                            return;
+                                        }
+                                    } catch (Throwable ignored) { }
+                                }
+
+                                // 2. Fallback to HdmiActivity
                                 Intent it = new Intent(InputChooserActivity.this, HdmiActivity.class);
                                 it.putExtra(HdmiActivity.EXTRA_INPUT_ID, inputId);
                                 it.putExtra(HdmiActivity.EXTRA_LABEL, label);
@@ -110,21 +129,13 @@ public class InputChooserActivity extends Activity {
                             }
                         });
                         r.setValueColor(connected ? 0xFFA7D28F : 0xFF6A7F94);
+                        if (firstRow == null) firstRow = r;
                     }
                 }
             }
         } catch (Throwable ignored) { }
 
-        // 3. Option to invoke Native TV Menu
-        p.addRow(getString(R.string.input_open_native), "", new Runnable() {
-            @Override
-            public void run() {
-                finish();
-                RemoteActions.triggerNativeInputs(InputChooserActivity.this);
-            }
-        });
-
-        // 4. Cancel / Close row
+        // 3. Cancel / Close row
         p.addRow(getString(R.string.set_close), "", new Runnable() {
             @Override
             public void run() {
@@ -133,6 +144,17 @@ public class InputChooserActivity extends Activity {
         });
 
         setContentView(p.root);
+
+        // Autofocus the first input row
+        if (firstRow != null) {
+            final View target = firstRow.cell;
+            p.root.post(new Runnable() {
+                @Override
+                public void run() {
+                    target.requestFocus();
+                }
+            });
+        }
     }
 
     @Override

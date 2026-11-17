@@ -23,6 +23,9 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
+import android.media.tv.TvInputInfo;
+import android.media.tv.TvInputManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,6 +43,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handles remote control key shortcuts:
@@ -118,8 +124,13 @@ public final class RemoteActions {
     public static String actionLabel(Context c, String action) {
         if (action == null || action.isEmpty()) return c.getString(R.string.key_act_none);
         if ("sleep".equals(action)) return c.getString(R.string.key_act_sleep);
-        if ("inputs".equals(action)) return c.getString(R.string.key_act_inputs);
-        if ("input_picker".equals(action)) return c.getString(R.string.key_act_input_picker);
+        if ("inputs".equals(action) || "input_picker".equals(action)) return c.getString(R.string.key_act_inputs);
+        if ("cycle_inputs".equals(action)) return c.getString(R.string.key_act_cycle_inputs);
+        if ("hdmi_1".equals(action)) return c.getString(R.string.key_act_hdmi_1);
+        if ("hdmi_2".equals(action)) return c.getString(R.string.key_act_hdmi_2);
+        if ("hdmi_3".equals(action)) return c.getString(R.string.key_act_hdmi_3);
+        if ("hdmi_4".equals(action)) return c.getString(R.string.key_act_hdmi_4);
+        if ("livetv".equals(action)) return c.getString(R.string.key_act_livetv);
         if ("mute".equals(action)) return c.getString(R.string.key_act_mute);
         if ("home".equals(action)) return c.getString(R.string.key_act_home);
         if ("back".equals(action)) return c.getString(R.string.key_act_back);
@@ -298,12 +309,32 @@ public final class RemoteActions {
             triggerSleep(c);
             return;
         }
-        if ("inputs".equals(action)) {
-            triggerNativeInputs(c);
+        if ("inputs".equals(action) || "input_picker".equals(action)) {
+            InputChooserActivity.open(c);
             return;
         }
-        if ("input_picker".equals(action)) {
-            InputChooserActivity.open(c);
+        if ("cycle_inputs".equals(action)) {
+            cycleInputs(c);
+            return;
+        }
+        if ("hdmi_1".equals(action)) {
+            switchToHdmiDirect(c, 1);
+            return;
+        }
+        if ("hdmi_2".equals(action)) {
+            switchToHdmiDirect(c, 2);
+            return;
+        }
+        if ("hdmi_3".equals(action)) {
+            switchToHdmiDirect(c, 3);
+            return;
+        }
+        if ("hdmi_4".equals(action)) {
+            switchToHdmiDirect(c, 4);
+            return;
+        }
+        if ("livetv".equals(action)) {
+            switchLiveTv(c);
             return;
         }
         if ("mute".equals(action)) {
@@ -340,98 +371,110 @@ public final class RemoteActions {
         }
     }
 
-    public static void triggerNativeInputs(Context c) {
-        Log.i(TAG, "triggerNativeInputs requested");
-
-        // 1. Send hardware KEYCODE_TV_INPUT (178) via ADB if ready
-        if (AdbBridge.isReady(c)) {
-            AdbBridge.run("input keyevent 178", null);
-            Log.i(TAG, "Sent keyevent 178 via AdbBridge");
-            return;
+    public static void switchToHdmiDirect(Context c, int hdmiNumber) {
+        int inputType = 2;
+        switch (hdmiNumber) {
+            case 1: inputType = 2; break;
+            case 2: inputType = 3; break;
+            case 3: inputType = 4; break;
+            case 4: inputType = 10; break;
         }
 
-        // 2. Try shell execution of keyevent 178
+        // 1. Try KaminoInputSwitchService (Native Fire OS HDMI input switcher)
         try {
-            Process p = Runtime.getRuntime().exec("input keyevent 178");
-            if (p.waitFor() == 0) {
-                Log.i(TAG, "Sent keyevent 178 via Runtime.exec");
+            Intent kaminoIntent = new Intent().setComponent(new ComponentName(
+                    "com.amazon.tv.inputpreference.service",
+                    "com.amazon.tv.inputpreference.service.KaminoInputSwitchService"));
+            kaminoIntent.putExtra("inputType", inputType);
+            if (c.startService(kaminoIntent) != null) {
+                Log.i(TAG, "Switched to HDMI " + hdmiNumber + " via Kamino, type=" + inputType);
                 return;
             }
         } catch (Throwable ignored) { }
 
-        // 3. Try native Fire TV / OEM Input Chooser activities
-        ComponentName[] components = {
-                new ComponentName("com.amazon.tv.inputpreference.service",
-                        "com.amazon.tv.inputpreference.player.InputChooserActivity"),
-                new ComponentName("com.amazon.tv.inputpreference",
-                        "com.amazon.tv.inputpreference.player.InputChooserActivity"),
-                new ComponentName("com.amazon.tv.inputpreference",
-                        "com.amazon.tv.inputpreference.inputtab.InputTabActivity"),
-                new ComponentName("com.amazon.tv.inputpreference.service",
-                        "com.amazon.tv.inputpreference.inputtab.InputTabActivity"),
-                new ComponentName("com.amazon.tv.settings",
-                        "com.amazon.tv.settings.v2.inputs.InputsActivity"),
-                new ComponentName("com.amazon.tv.settings.v2",
-                        "com.amazon.tv.settings.v2.inputs.InputsActivity")
-        };
-
-        for (int i = 0; i < components.length; i++) {
-            try {
-                Intent it = new Intent();
-                it.setComponent(components[i]);
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                if (c.getPackageManager().resolveActivity(it, 0) != null) {
-                    c.startActivity(it);
-                    Log.i(TAG, "Started native input chooser: " + components[i]);
-                    return;
-                }
-            } catch (Throwable ignored) { }
-        }
-
-        // 4. Try Amazon Launcher's native NAVIGATE_TO_INPUTS
+        // 2. Fallback: Search TvInputManager and launch HdmiActivity
         try {
-            Intent it = new Intent("com.amazon.tv.action.NAVIGATE_TO_INPUTS");
-            it.setPackage("com.amazon.tv.launcher");
+            TvInputManager tim = (TvInputManager) c.getSystemService(Context.TV_INPUT_SERVICE);
+            if (tim != null) {
+                List<TvInputInfo> list = tim.getTvInputList();
+                if (list != null) {
+                    for (int i = 0; i < list.size(); i++) {
+                        TvInputInfo info = list.get(i);
+                        if (info == null || !info.isPassthroughInput()) continue;
+                        int type = HdmiActivity.kaminoInputType(c, info.getId());
+                        if (type == inputType) {
+                            CharSequence lb = info.loadLabel(c);
+                            String label = (lb == null || lb.length() == 0) ? ("HDMI " + hdmiNumber) : lb.toString();
+                            Intent it = new Intent(c, HdmiActivity.class);
+                            it.putExtra(HdmiActivity.EXTRA_INPUT_ID, info.getId());
+                            it.putExtra(HdmiActivity.EXTRA_LABEL, label);
+                            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            c.startActivity(it);
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) { }
+    }
+
+    private static int lastInputIndex = -1;
+
+    public static void cycleInputs(Context c) {
+        try {
+            TvInputManager tim = (TvInputManager) c.getSystemService(Context.TV_INPUT_SERVICE);
+            if (tim == null) return;
+            List<TvInputInfo> list = tim.getTvInputList();
+            if (list == null || list.isEmpty()) return;
+
+            List<TvInputInfo> passthrough = new ArrayList<TvInputInfo>();
+            for (int i = 0; i < list.size(); i++) {
+                TvInputInfo info = list.get(i);
+                if (info != null && info.isPassthroughInput()) {
+                    passthrough.add(info);
+                }
+            }
+            if (passthrough.isEmpty()) return;
+
+            lastInputIndex = (lastInputIndex + 1) % passthrough.size();
+            TvInputInfo target = passthrough.get(lastInputIndex);
+
+            // Try KaminoInputSwitchService first
+            int type = HdmiActivity.kaminoInputType(c, target.getId());
+            if (type >= 0) {
+                try {
+                    Intent kaminoIntent = new Intent().setComponent(new ComponentName(
+                            "com.amazon.tv.inputpreference.service",
+                            "com.amazon.tv.inputpreference.service.KaminoInputSwitchService"));
+                    kaminoIntent.putExtra("inputType", type);
+                    if (c.startService(kaminoIntent) != null) {
+                        return;
+                    }
+                } catch (Throwable ignored) { }
+            }
+
+            CharSequence lb = null;
+            try { lb = target.loadLabel(c); } catch (Throwable ignored) { }
+            String label = (lb == null || lb.length() == 0) ? c.getString(R.string.home_input) : lb.toString();
+
+            Intent it = new Intent(c, HdmiActivity.class);
+            it.putExtra(HdmiActivity.EXTRA_INPUT_ID, target.getId());
+            it.putExtra(HdmiActivity.EXTRA_LABEL, label);
             it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (c.getPackageManager().resolveActivity(it, 0) != null) {
-                HomeRedirectService.suspend(15000L);
-                c.startActivity(it);
-                Log.i(TAG, "Started NAVIGATE_TO_INPUTS");
-                return;
-            }
+            c.startActivity(it);
         } catch (Throwable ignored) { }
+    }
 
-        // 5. Try standard Android TV VIEW_INPUTS actions
-        String[] actions = {
-                "android.media.tv.action.VIEW_INPUTS",
-                "android.intent.action.VIEW_INPUTS"
-        };
-        for (int i = 0; i < actions.length; i++) {
-            try {
-                Intent it = new Intent(actions[i]);
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                if (c.getPackageManager().resolveActivity(it, 0) != null) {
-                    c.startActivity(it);
-                    Log.i(TAG, "Started VIEW_INPUTS: " + actions[i]);
-                    return;
-                }
-            } catch (Throwable ignored) { }
+    public static void switchLiveTv(Context c) {
+        if (!AppModel.liveTvAvailable(c)) return;
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("livetv://showLiveTVButtonContent/"));
+            i.setComponent(new ComponentName(AppModel.LIVETV_PKG, AppModel.LIVETV_SVC));
+            if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i);
+            else c.startService(i);
+        } catch (Throwable t) {
+            Toast.makeText(c, R.string.home_livetv_failed, Toast.LENGTH_SHORT).show();
         }
-
-        // 6. Try AccessibilityService Quick Settings (Fire TV Quick Access panel overlay)
-        HomeRedirectService s = HomeRedirectService.getInstance();
-        if (s != null) {
-            try {
-                if (s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)) {
-                    Log.i(TAG, "Triggered GLOBAL_ACTION_QUICK_SETTINGS");
-                    return;
-                }
-            } catch (Throwable ignored) { }
-        }
-
-        // 7. Fallback to Homestead's InputChooserActivity if nothing native opened
-        Log.i(TAG, "Fallback to InputChooserActivity");
-        InputChooserActivity.open(c);
     }
 
     private static void toggleMute(Context c) {

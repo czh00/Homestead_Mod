@@ -103,8 +103,13 @@
   <string name="key_num_title">Number %1$s</string>
   <string name="key_act_none">None</string>
   <string name="key_act_sleep">Sleep / Standby</string>
-  <string name="key_act_inputs">Native input menu</string>
-  <string name="key_act_input_picker">Input switcher list</string>
+  <string name="key_act_inputs">Input sources menu</string>
+  <string name="key_act_cycle_inputs">Cycle next input</string>
+  <string name="key_act_hdmi_1">Switch to HDMI 1</string>
+  <string name="key_act_hdmi_2">Switch to HDMI 2</string>
+  <string name="key_act_hdmi_3">Switch to HDMI 3</string>
+  <string name="key_act_hdmi_4">Switch to HDMI 4</string>
+  <string name="key_act_livetv">Live TV</string>
   <string name="input_chooser_title">Input sources</string>
   <string name="input_chooser_help">Select an input to switch to</string>
   <string name="input_connected">Connected</string>

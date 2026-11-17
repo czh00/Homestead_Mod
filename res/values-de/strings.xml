@@ -103,8 +103,13 @@
   <string name="key_num_title">Taste %1$s</string>
   <string name="key_act_none">Keine</string>
   <string name="key_act_sleep">Ruhezustand / Standby</string>
-  <string name="key_act_inputs">TV-Eingangsquellen</string>
-  <string name="key_act_input_picker">Eingangsauswahl</string>
+  <string name="key_act_inputs">Eingangsquellen-Menü</string>
+  <string name="key_act_cycle_inputs">Nächsten Eingang wählen</string>
+  <string name="key_act_hdmi_1">Zu HDMI 1 wechseln</string>
+  <string name="key_act_hdmi_2">Zu HDMI 2 wechseln</string>
+  <string name="key_act_hdmi_3">Zu HDMI 3 wechseln</string>
+  <string name="key_act_hdmi_4">Zu HDMI 4 wechseln</string>
+  <string name="key_act_livetv">Live TV</string>
   <string name="input_chooser_title">Eingangsquellen</string>
   <string name="input_chooser_help">Wählen Sie einen Eingang aus</string>
   <string name="input_connected">Verbunden</string>
