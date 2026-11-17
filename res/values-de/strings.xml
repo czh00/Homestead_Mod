@@ -103,7 +103,13 @@
   <string name="key_num_title">Taste %1$s</string>
   <string name="key_act_none">Keine</string>
   <string name="key_act_sleep">Ruhezustand / Standby</string>
-  <string name="key_act_inputs">Eingangsquellen</string>
+  <string name="key_act_inputs">TV-Eingangsquellen</string>
+  <string name="key_act_input_picker">Eingangsauswahl</string>
+  <string name="input_chooser_title">Eingangsquellen</string>
+  <string name="input_chooser_help">Wählen Sie einen Eingang aus</string>
+  <string name="input_connected">Verbunden</string>
+  <string name="input_disconnected">Kein Signal</string>
+  <string name="input_open_native">TV-Menü öffnen</string>
   <string name="key_act_mute">Stummschalten</string>
   <string name="key_act_home">Startseite</string>
   <string name="key_act_back">Zurück</string>

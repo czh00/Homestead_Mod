@@ -100,7 +100,13 @@
   <string name="key_num_title">Touche %1$s</string>
   <string name="key_act_none">Aucune</string>
   <string name="key_act_sleep">Mise en veille</string>
-  <string name="key_act_inputs">Sources d\'entrée</string>
+  <string name="key_act_inputs">Sources TV natives</string>
+  <string name="key_act_input_picker">Sélecteur d\'entrées</string>
+  <string name="input_chooser_title">Sources d\'entrée</string>
+  <string name="input_chooser_help">Sélectionnez une source d\'entrée</string>
+  <string name="input_connected">Connecté</string>
+  <string name="input_disconnected">Aucun signal</string>
+  <string name="input_open_native">Ouvrir le menu TV</string>
   <string name="key_act_mute">Muet</string>
   <string name="key_act_home">Accueil</string>
   <string name="key_act_back">Retour</string>

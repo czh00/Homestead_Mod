@@ -913,6 +913,7 @@ public final class SettingsPanel {
                 "",
                 "sleep",
                 "inputs",
+                "input_picker",
                 "mute",
                 "home",
                 "back",

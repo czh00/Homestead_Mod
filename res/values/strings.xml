@@ -103,7 +103,13 @@
   <string name="key_num_title">Number %1$s</string>
   <string name="key_act_none">None</string>
   <string name="key_act_sleep">Sleep / Standby</string>
-  <string name="key_act_inputs">Input sources</string>
+  <string name="key_act_inputs">Native input menu</string>
+  <string name="key_act_input_picker">Input switcher list</string>
+  <string name="input_chooser_title">Input sources</string>
+  <string name="input_chooser_help">Select an input to switch to</string>
+  <string name="input_connected">Connected</string>
+  <string name="input_disconnected">No signal</string>
+  <string name="input_open_native">Open TV native menu</string>
   <string name="key_act_mute">Mute</string>
   <string name="key_act_home">Home</string>
   <string name="key_act_back">Back</string>

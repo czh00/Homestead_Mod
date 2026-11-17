@@ -14,6 +14,7 @@ package com.homestead.launcher;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -118,6 +119,7 @@ public final class RemoteActions {
         if (action == null || action.isEmpty()) return c.getString(R.string.key_act_none);
         if ("sleep".equals(action)) return c.getString(R.string.key_act_sleep);
         if ("inputs".equals(action)) return c.getString(R.string.key_act_inputs);
+        if ("input_picker".equals(action)) return c.getString(R.string.key_act_input_picker);
         if ("mute".equals(action)) return c.getString(R.string.key_act_mute);
         if ("home".equals(action)) return c.getString(R.string.key_act_home);
         if ("back".equals(action)) return c.getString(R.string.key_act_back);
@@ -297,7 +299,11 @@ public final class RemoteActions {
             return;
         }
         if ("inputs".equals(action)) {
-            openInputs(c);
+            triggerNativeInputs(c);
+            return;
+        }
+        if ("input_picker".equals(action)) {
+            InputChooserActivity.open(c);
             return;
         }
         if ("mute".equals(action)) {
@@ -334,23 +340,98 @@ public final class RemoteActions {
         }
     }
 
-    private static void openInputs(Context c) {
+    public static void triggerNativeInputs(Context c) {
+        Log.i(TAG, "triggerNativeInputs requested");
+
+        // 1. Send hardware KEYCODE_TV_INPUT (178) via ADB if ready
+        if (AdbBridge.isReady(c)) {
+            AdbBridge.run("input keyevent 178", null);
+            Log.i(TAG, "Sent keyevent 178 via AdbBridge");
+            return;
+        }
+
+        // 2. Try shell execution of keyevent 178
+        try {
+            Process p = Runtime.getRuntime().exec("input keyevent 178");
+            if (p.waitFor() == 0) {
+                Log.i(TAG, "Sent keyevent 178 via Runtime.exec");
+                return;
+            }
+        } catch (Throwable ignored) { }
+
+        // 3. Try native Fire TV / OEM Input Chooser activities
+        ComponentName[] components = {
+                new ComponentName("com.amazon.tv.inputpreference.service",
+                        "com.amazon.tv.inputpreference.player.InputChooserActivity"),
+                new ComponentName("com.amazon.tv.inputpreference",
+                        "com.amazon.tv.inputpreference.player.InputChooserActivity"),
+                new ComponentName("com.amazon.tv.inputpreference",
+                        "com.amazon.tv.inputpreference.inputtab.InputTabActivity"),
+                new ComponentName("com.amazon.tv.inputpreference.service",
+                        "com.amazon.tv.inputpreference.inputtab.InputTabActivity"),
+                new ComponentName("com.amazon.tv.settings",
+                        "com.amazon.tv.settings.v2.inputs.InputsActivity"),
+                new ComponentName("com.amazon.tv.settings.v2",
+                        "com.amazon.tv.settings.v2.inputs.InputsActivity")
+        };
+
+        for (int i = 0; i < components.length; i++) {
+            try {
+                Intent it = new Intent();
+                it.setComponent(components[i]);
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (c.getPackageManager().resolveActivity(it, 0) != null) {
+                    c.startActivity(it);
+                    Log.i(TAG, "Started native input chooser: " + components[i]);
+                    return;
+                }
+            } catch (Throwable ignored) { }
+        }
+
+        // 4. Try Amazon Launcher's native NAVIGATE_TO_INPUTS
+        try {
+            Intent it = new Intent("com.amazon.tv.action.NAVIGATE_TO_INPUTS");
+            it.setPackage("com.amazon.tv.launcher");
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (c.getPackageManager().resolveActivity(it, 0) != null) {
+                HomeRedirectService.suspend(15000L);
+                c.startActivity(it);
+                Log.i(TAG, "Started NAVIGATE_TO_INPUTS");
+                return;
+            }
+        } catch (Throwable ignored) { }
+
+        // 5. Try standard Android TV VIEW_INPUTS actions
         String[] actions = {
-                "com.amazon.device.settings.action.INPUTS",
-                "android.intent.action.VIEW_INPUTS",
-                "android.media.tv.action.VIEW_INPUTS"
+                "android.media.tv.action.VIEW_INPUTS",
+                "android.intent.action.VIEW_INPUTS"
         };
         for (int i = 0; i < actions.length; i++) {
             try {
                 Intent it = new Intent(actions[i]);
                 it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                c.startActivity(it);
-                return;
+                if (c.getPackageManager().resolveActivity(it, 0) != null) {
+                    c.startActivity(it);
+                    Log.i(TAG, "Started VIEW_INPUTS: " + actions[i]);
+                    return;
+                }
             } catch (Throwable ignored) { }
         }
-        if (AdbBridge.isReady(c)) {
-            AdbBridge.run("input keyevent 178", null);
+
+        // 6. Try AccessibilityService Quick Settings (Fire TV Quick Access panel overlay)
+        HomeRedirectService s = HomeRedirectService.getInstance();
+        if (s != null) {
+            try {
+                if (s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)) {
+                    Log.i(TAG, "Triggered GLOBAL_ACTION_QUICK_SETTINGS");
+                    return;
+                }
+            } catch (Throwable ignored) { }
         }
+
+        // 7. Fallback to Homestead's InputChooserActivity if nothing native opened
+        Log.i(TAG, "Fallback to InputChooserActivity");
+        InputChooserActivity.open(c);
     }
 
     private static void toggleMute(Context c) {
