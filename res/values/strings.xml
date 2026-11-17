@@ -112,7 +112,10 @@
   <string name="key_act_livetv">Live TV</string>
   <string name="input_chooser_title">Input sources</string>
   <string name="input_chooser_help">Select an input to switch to</string>
+  <string name="input_sec_connected">Connected inputs</string>
+  <string name="input_sec_other">Other inputs</string>
   <string name="input_connected">Connected</string>
+  <string name="input_standby">Standby</string>
   <string name="input_disconnected">No signal</string>
   <string name="input_open_native">Open TV native menu</string>
   <string name="key_act_mute">Mute</string>

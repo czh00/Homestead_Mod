@@ -109,7 +109,10 @@
   <string name="key_act_livetv">TV en direct</string>
   <string name="input_chooser_title">Sources d\'entrée</string>
   <string name="input_chooser_help">Sélectionnez une source d\'entrée</string>
+  <string name="input_sec_connected">Sources connectées</string>
+  <string name="input_sec_other">Autres sources</string>
   <string name="input_connected">Connecté</string>
+  <string name="input_standby">En veille</string>
   <string name="input_disconnected">Aucun signal</string>
   <string name="input_open_native">Ouvrir le menu TV</string>
   <string name="key_act_mute">Muet</string>

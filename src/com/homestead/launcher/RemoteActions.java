@@ -392,27 +392,14 @@ public final class RemoteActions {
             }
         } catch (Throwable ignored) { }
 
-        // 2. Fallback: Search TvInputManager and launch HdmiActivity
+        // 2. Fallback: Search sorted inputs and launch
         try {
-            TvInputManager tim = (TvInputManager) c.getSystemService(Context.TV_INPUT_SERVICE);
-            if (tim != null) {
-                List<TvInputInfo> list = tim.getTvInputList();
-                if (list != null) {
-                    for (int i = 0; i < list.size(); i++) {
-                        TvInputInfo info = list.get(i);
-                        if (info == null || !info.isPassthroughInput()) continue;
-                        int type = HdmiActivity.kaminoInputType(c, info.getId());
-                        if (type == inputType) {
-                            CharSequence lb = info.loadLabel(c);
-                            String label = (lb == null || lb.length() == 0) ? ("HDMI " + hdmiNumber) : lb.toString();
-                            Intent it = new Intent(c, HdmiActivity.class);
-                            it.putExtra(HdmiActivity.EXTRA_INPUT_ID, info.getId());
-                            it.putExtra(HdmiActivity.EXTRA_LABEL, label);
-                            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            c.startActivity(it);
-                            return;
-                        }
-                    }
+            List<InputChooserActivity.InputItem> items = InputChooserActivity.getSortedInputs(c);
+            for (int i = 0; i < items.size(); i++) {
+                InputChooserActivity.InputItem it = items.get(i);
+                if (it.portNumber == hdmiNumber) {
+                    InputChooserActivity.switchToInput(c, it.inputId, it.label);
+                    return;
                 }
             }
         } catch (Throwable ignored) { }
@@ -422,46 +409,19 @@ public final class RemoteActions {
 
     public static void cycleInputs(Context c) {
         try {
-            TvInputManager tim = (TvInputManager) c.getSystemService(Context.TV_INPUT_SERVICE);
-            if (tim == null) return;
-            List<TvInputInfo> list = tim.getTvInputList();
-            if (list == null || list.isEmpty()) return;
+            List<InputChooserActivity.InputItem> items = InputChooserActivity.getSortedInputs(c);
+            if (items.isEmpty()) return;
 
-            List<TvInputInfo> passthrough = new ArrayList<TvInputInfo>();
-            for (int i = 0; i < list.size(); i++) {
-                TvInputInfo info = list.get(i);
-                if (info != null && info.isPassthroughInput()) {
-                    passthrough.add(info);
-                }
+            // Prioritize connected inputs
+            List<InputChooserActivity.InputItem> list = new ArrayList<InputChooserActivity.InputItem>();
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).connected) list.add(items.get(i));
             }
-            if (passthrough.isEmpty()) return;
+            if (list.isEmpty()) list = items;
 
-            lastInputIndex = (lastInputIndex + 1) % passthrough.size();
-            TvInputInfo target = passthrough.get(lastInputIndex);
-
-            // Try KaminoInputSwitchService first
-            int type = HdmiActivity.kaminoInputType(c, target.getId());
-            if (type >= 0) {
-                try {
-                    Intent kaminoIntent = new Intent().setComponent(new ComponentName(
-                            "com.amazon.tv.inputpreference.service",
-                            "com.amazon.tv.inputpreference.service.KaminoInputSwitchService"));
-                    kaminoIntent.putExtra("inputType", type);
-                    if (c.startService(kaminoIntent) != null) {
-                        return;
-                    }
-                } catch (Throwable ignored) { }
-            }
-
-            CharSequence lb = null;
-            try { lb = target.loadLabel(c); } catch (Throwable ignored) { }
-            String label = (lb == null || lb.length() == 0) ? c.getString(R.string.home_input) : lb.toString();
-
-            Intent it = new Intent(c, HdmiActivity.class);
-            it.putExtra(HdmiActivity.EXTRA_INPUT_ID, target.getId());
-            it.putExtra(HdmiActivity.EXTRA_LABEL, label);
-            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            c.startActivity(it);
+            lastInputIndex = (lastInputIndex + 1) % list.size();
+            InputChooserActivity.InputItem target = list.get(lastInputIndex);
+            InputChooserActivity.switchToInput(c, target.inputId, target.label);
         } catch (Throwable ignored) { }
     }
 

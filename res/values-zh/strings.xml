@@ -112,7 +112,10 @@
   <string name="key_act_livetv">即時電視</string>
   <string name="input_chooser_title">輸入訊號源</string>
   <string name="input_chooser_help">選擇要切換的輸入訊號</string>
+  <string name="input_sec_connected">已連線</string>
+  <string name="input_sec_other">未連線</string>
   <string name="input_connected">已連線</string>
+  <string name="input_standby">待機中</string>
   <string name="input_disconnected">無訊號</string>
   <string name="input_open_native">開啟電視原生選單</string>
   <string name="key_act_mute">靜音</string>

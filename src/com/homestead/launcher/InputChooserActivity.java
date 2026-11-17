@@ -25,16 +25,141 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Floating side-sheet activity for selecting and switching TV video inputs (HDMI 1-4, Live TV),
  * styled identically to native Fire TV panels.
+ * Inputs are sorted with connected sources prioritized at the top, and ordered by HDMI 1, 2, 3, 4.
  */
 public class InputChooserActivity extends Activity {
 
+    public static class InputItem {
+        public final TvInputInfo info;
+        public final String inputId;
+        public final String label;
+        public final boolean connected;
+        public final int state;
+        public final int portNumber;
+
+        public InputItem(TvInputInfo info, String inputId, String label, int state, int portNumber) {
+            this.info = info;
+            this.inputId = inputId;
+            this.label = label;
+            this.state = state;
+            this.connected = (state == TvInputManager.INPUT_STATE_CONNECTED
+                    || state == TvInputManager.INPUT_STATE_CONNECTED_STANDBY);
+            this.portNumber = portNumber;
+        }
+    }
+
     public static void open(Context c) {
         Intent it = new Intent(c, InputChooserActivity.class);
+        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        c.startActivity(it);
+    }
+
+    public static int extractPortNumber(String label, String inputId) {
+        String l = (label == null) ? "" : label.toUpperCase(Locale.US);
+        String id = (inputId == null) ? "" : inputId.toUpperCase(Locale.US);
+
+        for (int n = 1; n <= 8; n++) {
+            if (l.contains("HDMI " + n) || l.contains("HDMI" + n) || l.contains("PORT " + n) || l.contains("PORT" + n)) {
+                return n;
+            }
+        }
+
+        for (int n = 1; n <= 8; n++) {
+            if (id.endsWith("HW" + n) || id.contains("/HW" + n + "/") || id.contains("HDMI" + n) || id.contains("HDMI_" + n)) {
+                return n;
+            }
+        }
+
+        if (l.contains("AV") || l.contains("COMPOSITE") || id.contains("COMPOSITE") || id.contains("AV")) return 20;
+        if (l.contains("COMPONENT") || id.contains("COMPONENT")) return 21;
+        if (l.contains("VGA") || id.contains("VGA")) return 22;
+
+        return 50;
+    }
+
+    public static List<InputItem> getSortedInputs(Context c) {
+        List<InputItem> items = new ArrayList<InputItem>();
+        try {
+            TvInputManager tim = (TvInputManager) c.getSystemService(Context.TV_INPUT_SERVICE);
+            if (tim != null) {
+                List<TvInputInfo> list = tim.getTvInputList();
+                if (list != null) {
+                    for (int i = 0; i < list.size(); i++) {
+                        TvInputInfo info = list.get(i);
+                        if (info == null || !info.isPassthroughInput()) continue;
+
+                        CharSequence lb = null;
+                        try { lb = info.loadLabel(c); } catch (Throwable ignored) { }
+                        String rawLabel = (lb == null || lb.length() == 0) ? "" : lb.toString();
+                        int port = extractPortNumber(rawLabel, info.getId());
+
+                        String label = rawLabel;
+                        if (label.isEmpty() || label.equalsIgnoreCase("HDMI") || label.equals(c.getString(R.string.home_input))) {
+                            if (port >= 1 && port <= 8) {
+                                label = "HDMI " + port;
+                            } else {
+                                label = c.getString(R.string.home_input);
+                            }
+                        }
+
+                        int state = TvInputManager.INPUT_STATE_DISCONNECTED;
+                        if (Build.VERSION.SDK_INT >= 24) {
+                            try {
+                                state = tim.getInputState(info.getId());
+                            } catch (Throwable ignored) { }
+                        }
+
+                        items.add(new InputItem(info, info.getId(), label, state, port));
+                    }
+                }
+            }
+        } catch (Throwable ignored) { }
+
+        Collections.sort(items, new Comparator<InputItem>() {
+            @Override
+            public int compare(InputItem a, InputItem b) {
+                // 1. Connected first
+                if (a.connected != b.connected) {
+                    return a.connected ? -1 : 1;
+                }
+                // 2. By port number (HDMI 1 before HDMI 2 before HDMI 3...)
+                if (a.portNumber != b.portNumber) {
+                    return Integer.compare(a.portNumber, b.portNumber);
+                }
+                // 3. By label
+                return a.label.compareToIgnoreCase(b.label);
+            }
+        });
+
+        return items;
+    }
+
+    public static void switchToInput(Context c, String inputId, String label) {
+        int type = HdmiActivity.kaminoInputType(c, inputId);
+        if (type >= 0) {
+            try {
+                Intent kaminoIntent = new Intent().setComponent(new ComponentName(
+                        "com.amazon.tv.inputpreference.service",
+                        "com.amazon.tv.inputpreference.service.KaminoInputSwitchService"));
+                kaminoIntent.putExtra("inputType", type);
+                if (c.startService(kaminoIntent) != null) {
+                    return;
+                }
+            } catch (Throwable ignored) { }
+        }
+
+        Intent it = new Intent(c, HdmiActivity.class);
+        it.putExtra(HdmiActivity.EXTRA_INPUT_ID, inputId);
+        it.putExtra(HdmiActivity.EXTRA_LABEL, label);
         it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         c.startActivity(it);
     }
@@ -56,86 +181,80 @@ public class InputChooserActivity extends Activity {
         });
 
         Panel.Row firstRow = null;
+        List<InputItem> items = getSortedInputs(this);
 
-        // 1. Live TV if available on this TV
-        if (AppModel.liveTvAvailable(this)) {
-            Panel.Row r = p.addRow(getString(R.string.home_livetv), "", new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("livetv://showLiveTVButtonContent/"));
-                        i.setComponent(new ComponentName(AppModel.LIVETV_PKG, AppModel.LIVETV_SVC));
-                        if (Build.VERSION.SDK_INT >= 26) startForegroundService(i);
-                        else startService(i);
-                    } catch (Throwable t) {
-                        Toast.makeText(InputChooserActivity.this, R.string.home_livetv_failed, Toast.LENGTH_SHORT).show();
-                    }
-                    finish();
-                }
-            });
-            r.setHelp(getString(R.string.home_sec_inputs));
-            if (firstRow == null) firstRow = r;
+        boolean hasConnected = false;
+        boolean hasDisconnected = false;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).connected) hasConnected = true;
+            else hasDisconnected = true;
         }
 
-        // 2. Hardware Passthrough Inputs (HDMI 1, HDMI 2, HDMI 3, HDMI 4, Composite, etc.)
-        try {
-            TvInputManager tim = (TvInputManager) getSystemService(Context.TV_INPUT_SERVICE);
-            if (tim != null) {
-                List<TvInputInfo> list = tim.getTvInputList();
-                if (list != null) {
-                    for (int i = 0; i < list.size(); i++) {
-                        final TvInputInfo info = list.get(i);
-                        if (info == null || !info.isPassthroughInput()) continue;
+        // Section 1: Connected Inputs (Priority on top, sorted by port number)
+        if (hasConnected) {
+            p.addHeader(getString(R.string.input_sec_connected));
+            for (int i = 0; i < items.size(); i++) {
+                final InputItem it = items.get(i);
+                if (!it.connected) continue;
 
-                        CharSequence lb = null;
-                        try { lb = info.loadLabel(this); } catch (Throwable ignored) { }
-                        final String label = (lb == null || lb.length() == 0)
-                                ? getString(R.string.home_input) : lb.toString();
+                String status = (it.state == TvInputManager.INPUT_STATE_CONNECTED_STANDBY)
+                        ? getString(R.string.input_standby)
+                        : getString(R.string.input_connected);
 
-                        boolean connected = false;
-                        if (Build.VERSION.SDK_INT >= 24) {
-                            try {
-                                connected = (tim.getInputState(info.getId()) == TvInputManager.INPUT_STATE_CONNECTED);
-                            } catch (Throwable ignored) { }
-                        }
-
-                        String status = connected ? getString(R.string.input_connected) : getString(R.string.input_disconnected);
-                        final String inputId = info.getId();
-
-                        Panel.Row r = p.addRow(label, status, new Runnable() {
-                            @Override
-                            public void run() {
-                                // 1. Try KaminoInputSwitchService directly
-                                int type = HdmiActivity.kaminoInputType(InputChooserActivity.this, inputId);
-                                if (type >= 0) {
-                                    try {
-                                        Intent kaminoIntent = new Intent().setComponent(new ComponentName(
-                                                "com.amazon.tv.inputpreference.service",
-                                                "com.amazon.tv.inputpreference.service.KaminoInputSwitchService"));
-                                        kaminoIntent.putExtra("inputType", type);
-                                        if (startService(kaminoIntent) != null) {
-                                            finish();
-                                            return;
-                                        }
-                                    } catch (Throwable ignored) { }
-                                }
-
-                                // 2. Fallback to HdmiActivity
-                                Intent it = new Intent(InputChooserActivity.this, HdmiActivity.class);
-                                it.putExtra(HdmiActivity.EXTRA_INPUT_ID, inputId);
-                                it.putExtra(HdmiActivity.EXTRA_LABEL, label);
-                                startActivity(it);
-                                finish();
-                            }
-                        });
-                        r.setValueColor(connected ? 0xFFA7D28F : 0xFF6A7F94);
-                        if (firstRow == null) firstRow = r;
+                Panel.Row r = p.addRow(it.label, status, new Runnable() {
+                    @Override
+                    public void run() {
+                        switchToInput(InputChooserActivity.this, it.inputId, it.label);
+                        finish();
                     }
-                }
+                });
+                r.setValueColor(0xFFA7D28F);
+                if (firstRow == null) firstRow = r;
             }
-        } catch (Throwable ignored) { }
+        }
 
-        // 3. Cancel / Close row
+        // Section 2: Other Inputs (Disconnected / No signal, sorted by port number)
+        if (hasDisconnected || AppModel.liveTvAvailable(this)) {
+            if (hasConnected) {
+                p.addHeader(getString(R.string.input_sec_other));
+            }
+            for (int i = 0; i < items.size(); i++) {
+                final InputItem it = items.get(i);
+                if (it.connected) continue;
+
+                Panel.Row r = p.addRow(it.label, getString(R.string.input_disconnected), new Runnable() {
+                    @Override
+                    public void run() {
+                        switchToInput(InputChooserActivity.this, it.inputId, it.label);
+                        finish();
+                    }
+                });
+                r.setValueColor(0xFF6A7F94);
+                if (firstRow == null) firstRow = r;
+            }
+
+            // Live TV (Antenna / Cable tuner)
+            if (AppModel.liveTvAvailable(this)) {
+                Panel.Row r = p.addRow(getString(R.string.home_livetv), "", new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("livetv://showLiveTVButtonContent/"));
+                            i.setComponent(new ComponentName(AppModel.LIVETV_PKG, AppModel.LIVETV_SVC));
+                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i);
+                            else startService(i);
+                        } catch (Throwable t) {
+                            Toast.makeText(InputChooserActivity.this, R.string.home_livetv_failed, Toast.LENGTH_SHORT).show();
+                        }
+                        finish();
+                    }
+                });
+                r.setHelp(getString(R.string.home_sec_inputs));
+                if (firstRow == null) firstRow = r;
+            }
+        }
+
+        // Close row
         p.addRow(getString(R.string.set_close), "", new Runnable() {
             @Override
             public void run() {
