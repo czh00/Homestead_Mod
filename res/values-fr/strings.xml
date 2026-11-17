@@ -102,6 +102,12 @@
   <string name="key_num_title">Touche %1$s</string>
   <string name="key_act_none">Aucune</string>
   <string name="key_act_sleep">Mise en veille</string>
+  <string name="key_act_picture_settings">Paramètres d\'image du téléviseur</string>
+  <string name="set_remote_picture_settings_help">Ouvre le menu d\'image, rétroéclairage et affichage du téléviseur.</string>
+  <string name="set_remote_bright_mode">Mode de réglage de la luminosité</string>
+  <string name="set_remote_bright_mode_system">Luminosité système</string>
+  <string name="set_remote_bright_mode_overlay">Masque de superposition</string>
+  <string name="set_remote_bright_mode_help">La luminosité système modifie les paramètres sans assombrir les captures d\'écran. Le masque assombrit tout mais affecte les captures.</string>
   <string name="key_act_inputs">Menu des sources d\'entrée</string>
   <string name="key_act_cycle_inputs">Source suivante</string>
   <string name="key_act_hdmi_1">Basculer sur HDMI 1</string>

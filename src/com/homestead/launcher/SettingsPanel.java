@@ -846,6 +846,28 @@ public final class SettingsPanel {
             }
         });
 
+        final Panel.Row brightModeRow = p.addRow(c.getString(R.string.set_remote_bright_mode),
+                Prefs.isBrightnessModeOverlay(c)
+                        ? c.getString(R.string.set_remote_bright_mode_overlay)
+                        : c.getString(R.string.set_remote_bright_mode_system), null).asSwitch();
+        brightModeRow.setHelp(c.getString(R.string.set_remote_bright_mode_help));
+        brightModeRow.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                boolean isOverlay = !Prefs.isBrightnessModeOverlay(c);
+                Prefs.setBrightnessMode(c, isOverlay ? Prefs.BRIGHTNESS_MODE_OVERLAY : Prefs.BRIGHTNESS_MODE_SYSTEM);
+                brightModeRow.setValue(isOverlay
+                        ? c.getString(R.string.set_remote_bright_mode_overlay)
+                        : c.getString(R.string.set_remote_bright_mode_system));
+                RemoteActions.applyBrightness(c);
+            }
+        });
+
+        p.addRow(c.getString(R.string.key_act_picture_settings), "", new Runnable() {
+            public void run() {
+                RemoteActions.openPictureSettings(c);
+            }
+        }).opens().setHelp(c.getString(R.string.set_remote_picture_settings_help));
+
         // 2. Color buttons
         p.addHeader(c.getString(R.string.set_remote_sec_colors));
         final String[] colorKeys = { "red", "green", "yellow", "blue" };
@@ -925,6 +947,7 @@ public final class SettingsPanel {
         final String[] standardActions = {
                 "",
                 "sleep",
+                "picture_settings",
                 "inputs",
                 "cycle_inputs",
                 "hdmi_1",

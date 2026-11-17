@@ -140,6 +140,7 @@ public final class RemoteActions {
         if ("vol_down".equals(action)) return c.getString(R.string.key_act_vol_down);
         if ("brightness_up".equals(action)) return c.getString(R.string.key_act_bright_up);
         if ("brightness_down".equals(action)) return c.getString(R.string.key_act_bright_down);
+        if ("picture_settings".equals(action)) return c.getString(R.string.key_act_picture_settings);
         if (action.startsWith("app:")) {
             String pkg = action.substring(4);
             return c.getString(R.string.key_act_open_app, getAppLabel(c, pkg));
@@ -363,6 +364,10 @@ public final class RemoteActions {
             adjustBrightness(c, -10);
             return;
         }
+        if ("picture_settings".equals(action)) {
+            openPictureSettings(c);
+            return;
+        }
         if (action.startsWith("app:")) {
             launchApp(c, action.substring(4));
             return;
@@ -556,23 +561,93 @@ public final class RemoteActions {
             @Override
             public void run() {
                 int level = Prefs.screenBrightness(c);
+                int sysVal = Math.round(level * 255f / 100f);
 
                 // 1. Try system-wide SCREEN_BRIGHTNESS setting
                 try {
-                    int sysVal = Math.round(level * 255f / 100f);
-                    Settings.System.putInt(c.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, sysVal);
+                    Settings.System.putInt(c.getContentResolver(),
+                            Settings.System.SCREEN_BRIGHTNESS_MODE, 0);
+                    Settings.System.putInt(c.getContentResolver(),
+                            Settings.System.SCREEN_BRIGHTNESS, sysVal);
                 } catch (Throwable ignored) { }
 
                 // 2. Try ADB if available
                 if (AdbBridge.isReady(c)) {
-                    int sysVal = Math.round(level * 255f / 100f);
-                    AdbBridge.run("settings put system screen_brightness " + sysVal, null);
+                    AdbBridge.run(new String[] {
+                            "pm grant " + c.getPackageName() + " android.permission.WRITE_SETTINGS",
+                            "settings put system screen_brightness_mode 0",
+                            "settings put system screen_brightness " + sysVal,
+                            "settings put global picture_backlight " + level
+                    }, null);
                 }
 
-                // 3. Update Global Dimmer View (covers entire TV across all apps & inputs)
-                updateGlobalDimmer(c, level);
+                // 3. Update window brightness for active launcher activity
+                MainActivity act = HomeRedirectService.getLiveActivity();
+                if (act != null && !act.isFinishing()) {
+                    try {
+                        WindowManager.LayoutParams lp = act.getWindow().getAttributes();
+                        lp.screenBrightness = level / 100f;
+                        act.getWindow().setAttributes(lp);
+                    } catch (Throwable ignored) { }
+                }
+
+                // 4. Update or clear dimmer overlay based on brightness mode
+                if (Prefs.isBrightnessModeOverlay(c)) {
+                    updateGlobalDimmer(c, level);
+                } else {
+                    removeGlobalDimmer();
+                }
             }
         });
+    }
+
+    public static void removeGlobalDimmer() {
+        if (dimmerView != null) {
+            HomeRedirectService s = HomeRedirectService.getInstance();
+            if (s != null) {
+                WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
+                if (wm != null) {
+                    try {
+                        wm.removeView(dimmerView);
+                    } catch (Throwable ignored) { }
+                }
+            }
+            dimmerView = null;
+        }
+    }
+
+    public static void openPictureSettings(Context c) {
+        // 1. If ADB is ready, KEYCODE_SETTINGS (176) opens the TV's native quick settings overlay
+        if (AdbBridge.isReady(c)) {
+            AdbBridge.run("input keyevent 176", null);
+            return;
+        }
+
+        // 2. Try Fire TV Display & Sounds activity
+        try {
+            Intent it = new Intent();
+            it.setComponent(new ComponentName("com.amazon.tv.settings.v2",
+                    "com.amazon.tv.settings.v2.tv.display_sounds.DisplayAndSoundsActivity"));
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(it);
+            return;
+        } catch (Throwable ignored) { }
+
+        // 3. Try standard Android display settings
+        try {
+            Intent it = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(it);
+            return;
+        } catch (Throwable ignored) { }
+
+        // 4. Try Accessibility Quick Settings
+        HomeRedirectService s = HomeRedirectService.getInstance();
+        if (s != null && Build.VERSION.SDK_INT >= 28) {
+            try {
+                s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS);
+            } catch (Throwable ignored) { }
+        }
     }
 
     private static void updateGlobalDimmer(Context c, int level) {

@@ -73,6 +73,9 @@ public final class Prefs {
     private static final String K_REMOTE_CH_BRIGHTNESS = "remote_ch_brightness";
     private static final String K_REMOTE_RED_SLEEP = "remote_red_sleep";
     private static final String K_SCREEN_BRIGHTNESS = "screen_brightness";
+    private static final String K_BRIGHTNESS_MODE = "brightness_mode";
+    public static final String BRIGHTNESS_MODE_SYSTEM = "system";
+    public static final String BRIGHTNESS_MODE_OVERLAY = "overlay";
 
     public static final int SORT_LAST_USED = 0;
     public static final int SORT_ALPHA = 1;
@@ -312,6 +315,16 @@ public final class Prefs {
     }
     public static void setScreenBrightness(Context c, int percent) {
         sp(c).edit().putInt(K_SCREEN_BRIGHTNESS, percent).apply();
+    }
+
+    public static String brightnessMode(Context c) {
+        return sp(c).getString(K_BRIGHTNESS_MODE, BRIGHTNESS_MODE_SYSTEM);
+    }
+    public static void setBrightnessMode(Context c, String mode) {
+        sp(c).edit().putString(K_BRIGHTNESS_MODE, mode).apply();
+    }
+    public static boolean isBrightnessModeOverlay(Context c) {
+        return BRIGHTNESS_MODE_OVERLAY.equals(brightnessMode(c));
     }
 
     /** "Good evening" at the top left. Off by default. */

@@ -105,6 +105,12 @@
   <string name="key_num_title">Taste %1$s</string>
   <string name="key_act_none">Keine</string>
   <string name="key_act_sleep">Ruhezustand / Standby</string>
+  <string name="key_act_picture_settings">TV-Bildeinstellungen</string>
+  <string name="set_remote_picture_settings_help">Öffnet das TV-Menü für Bild, Hintergrundbeleuchtung und Anzeigemodi.</string>
+  <string name="set_remote_bright_mode">Helligkeitsanpassung</string>
+  <string name="set_remote_bright_mode_system">Systemhelligkeit</string>
+  <string name="set_remote_bright_mode_overlay">Overlay-Maske</string>
+  <string name="set_remote_bright_mode_help">Systemhelligkeit ändert die Android-Einstellung ohne dunkle Screenshots. Overlay-Maske dunkelt alle Apps ab, beeinflusst jedoch Screenshots.</string>
   <string name="key_act_inputs">Eingangsquellen-Menü</string>
   <string name="key_act_cycle_inputs">Nächsten Eingang wählen</string>
   <string name="key_act_hdmi_1">Zu HDMI 1 wechseln</string>

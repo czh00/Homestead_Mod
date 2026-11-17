@@ -105,6 +105,12 @@
   <string name="key_num_title">Number %1$s</string>
   <string name="key_act_none">None</string>
   <string name="key_act_sleep">Sleep / Standby</string>
+  <string name="key_act_picture_settings">TV Picture Settings</string>
+  <string name="set_remote_picture_settings_help">Open the TV native picture, backlight and display options menu.</string>
+  <string name="set_remote_bright_mode">Brightness control mode</string>
+  <string name="set_remote_bright_mode_system">System brightness</string>
+  <string name="set_remote_bright_mode_overlay">Overlay mask filter</string>
+  <string name="set_remote_bright_mode_help">System brightness modifies Android system level without darkening screenshots. Overlay filter applies a translucent black mask that is guaranteed across all apps and HDMI but darkens screenshots.</string>
   <string name="key_act_inputs">Input sources menu</string>
   <string name="key_act_cycle_inputs">Cycle next input</string>
   <string name="key_act_hdmi_1">Switch to HDMI 1</string>

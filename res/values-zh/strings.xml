@@ -105,6 +105,12 @@
   <string name="key_num_title">數字鍵 %1$s</string>
   <string name="key_act_none">無動作</string>
   <string name="key_act_sleep">待機 / 休眠</string>
+  <string name="key_act_picture_settings">電視原廠畫面設定</string>
+  <string name="set_remote_picture_settings_help">開啟電視原廠的畫面、背光與影像模式調整選單。</string>
+  <string name="set_remote_bright_mode">亮度調整機制</string>
+  <string name="set_remote_bright_mode_system">系統原生亮度</string>
+  <string name="set_remote_bright_mode_overlay">全域遮罩濾鏡</string>
+  <string name="set_remote_bright_mode_help">「系統原生亮度」透過 Android 系統與 ADB 調整數值，截圖不變暗；「全域遮罩濾鏡」覆蓋黑色半透明遮罩降暗螢幕，確保在所有 App 與 HDMI 均強制生效（但截圖會變暗）。</string>
   <string name="key_act_inputs">輸入訊號源選單</string>
   <string name="key_act_cycle_inputs">循環切換訊號源</string>
   <string name="key_act_hdmi_1">切換至 HDMI 1</string>
