@@ -162,6 +162,10 @@ public class HomeRedirectService extends AccessibilityService {
         if (liveActivity != null && liveActivity.get() == a) liveActivity = null;
     }
 
+    public static MainActivity getLiveActivity() {
+        return (liveActivity == null) ? null : liveActivity.get();
+    }
+
     /** The language was changed from a panel in context c: every window reads its text again. */
     static void languageChanged(Context c) {
         Lang.apply(c);

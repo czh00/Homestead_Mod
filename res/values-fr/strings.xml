@@ -82,7 +82,11 @@
   <string name="set_remote_ch_brightness_help">Utilisez les touches Chaîne +/- pour régler la luminosité de l\'écran.</string>
   <string name="set_remote_red_sleep">Touche rouge pour veille (sommeil)</string>
   <string name="set_remote_red_sleep_help">Appuyez sur la touche rouge pour mettre la télévision en veille.</string>
+  <string name="set_remote_last_key">Dernière touche détectée</string>
+  <string name="set_remote_none">Aucune (appuyer pour tester)</string>
+  <string name="set_remote_note">Les touches détectées s\'affichent ci-dessus en temps réel. Si les touches ne répondent pas dans d\'autres applications, désactivez puis réactivez Homestead dans Paramètres Fire TV -> Accessibilité.</string>
   <string name="hud_brightness">Luminosité : %1$d%%</string>
+  <string name="sleep_hint">TV en veille (appuyer pour réveiller)</string>
   <string name="set_system">Système</string>
   <string name="set_setup">Installation</string>
   <string name="set_setup_done">terminée</string>

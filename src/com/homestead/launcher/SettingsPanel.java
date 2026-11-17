@@ -124,6 +124,16 @@ public final class SettingsPanel {
             }
         });
 
+        final Panel.Row lastKeyRow = p.addRow(c.getString(R.string.set_remote_last_key),
+                RemoteActions.getLastKeyDescription(c), null);
+        lastKeyRow.setValueColor(0xFF8FA3B8);
+        RemoteActions.setKeyObserver(new Runnable() {
+            public void run() {
+                lastKeyRow.setValue(RemoteActions.getLastKeyDescription(c));
+            }
+        });
+        p.addNote(c.getString(R.string.set_remote_note));
+
         p.addHeader(c.getString(R.string.set_system));
 
         boolean ready = SetupPanel.homeWorks(c);

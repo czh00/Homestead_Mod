@@ -85,7 +85,11 @@
   <string name="set_remote_ch_brightness_help">Verwenden Sie Kanal +/- Tasten, um die Bildschirmhelligkeit anzupassen.</string>
   <string name="set_remote_red_sleep">Rote Taste als Ein/Aus (Ruhezustand)</string>
   <string name="set_remote_red_sleep_help">Drücken Sie die rote Taste, um den Fernseher in den Ruhezustand zu versetzen.</string>
+  <string name="set_remote_last_key">Zuletzt erkannte Taste</string>
+  <string name="set_remote_none">Keine (Fernbedienung drücken)</string>
+  <string name="set_remote_note">Erkannte Tasten werden oben in Echtzeit angezeigt. Falls Tasten in anderen Apps nicht reagieren, schalten Sie Homestead unter Fire TV Einstellungen -> Barrierefreiheit aus und wieder ein.</string>
   <string name="hud_brightness">Helligkeit: %1$d%%</string>
+  <string name="sleep_hint">TV im Ruhezustand (beliebige Taste zum Aufwecken)</string>
   <string name="set_system">System</string>
   <string name="set_setup">Einrichtung</string>
   <string name="set_setup_done">fertig</string>

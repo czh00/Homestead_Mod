@@ -85,7 +85,11 @@
   <string name="set_remote_ch_brightness_help">Use Channel +/- buttons on the remote to adjust screen brightness.</string>
   <string name="set_remote_red_sleep">Red button for power (sleep)</string>
   <string name="set_remote_red_sleep_help">Press the Red button on the remote to put the TV to sleep.</string>
+  <string name="set_remote_last_key">Last detected key</string>
+  <string name="set_remote_none">None (press remote to test)</string>
+  <string name="set_remote_note">Detected key name and code are shown above in real time when you press buttons. If buttons do not respond inside other apps, toggle Homestead off and on in Fire TV Settings -> Accessibility.</string>
   <string name="hud_brightness">Brightness: %1$d%%</string>
+  <string name="sleep_hint">TV sleeping (press any key to wake)</string>
   <string name="set_system">System</string>
   <string name="set_setup">Setup</string>
   <string name="set_setup_done">done</string>
