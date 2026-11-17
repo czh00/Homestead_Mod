@@ -93,7 +93,34 @@ public class MainActivity extends Activity implements HomeGrid.Listener {
     @Override
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
-        if (home != null) home.closePanels();
+        setIntent(i);
+        String panel = i != null ? i.getStringExtra("show_panel") : null;
+        if (panel != null) {
+            openPanelDirect(panel);
+        } else if (home != null) {
+            home.closePanels();
+        }
+    }
+
+    public void openPanelDirect(final String panelType) {
+        if (home == null || panelType == null) return;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                home.closePanels();
+                if ("settings".equals(panelType)) {
+                    home.showPanel(SettingsPanel.build(MainActivity.this, home));
+                } else if ("health".equals(panelType)) {
+                    home.showPanel(HealthPanel.build(MainActivity.this, home));
+                } else if ("debloat".equals(panelType)) {
+                    home.showPanel(DebloatPanel.build(MainActivity.this, home));
+                } else if ("firetv".equals(panelType)) {
+                    home.showPanel(FireTvSettingsPanel.build(MainActivity.this, home));
+                } else if ("setup".equals(panelType)) {
+                    home.showPanel(SetupPanel.build(MainActivity.this, home));
+                }
+            }
+        });
     }
 
     /** Called by the service after it reloads the shared model. */
@@ -165,6 +192,13 @@ public class MainActivity extends Activity implements HomeGrid.Listener {
         if (home != null) home.updateClock();
         if (Prefs.screenBrightness(this) < 100) {
             RemoteActions.applyBrightness(this);
+        }
+
+        Intent curIntent = getIntent();
+        if (curIntent != null && curIntent.hasExtra("show_panel")) {
+            String p = curIntent.getStringExtra("show_panel");
+            curIntent.removeExtra("show_panel");
+            openPanelDirect(p);
         }
     }
 

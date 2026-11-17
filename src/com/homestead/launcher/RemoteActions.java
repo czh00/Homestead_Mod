@@ -141,6 +141,19 @@ public final class RemoteActions {
         if ("brightness_up".equals(action)) return c.getString(R.string.key_act_bright_up);
         if ("brightness_down".equals(action)) return c.getString(R.string.key_act_bright_down);
         if ("picture_settings".equals(action)) return c.getString(R.string.key_act_picture_settings);
+        if ("set_homestead".equals(action)) return c.getString(R.string.key_act_set_homestead);
+        if ("set_health".equals(action)) return c.getString(R.string.key_act_set_health);
+        if ("set_debloat".equals(action)) return c.getString(R.string.key_act_set_debloat);
+        if ("set_firetv".equals(action)) return c.getString(R.string.key_act_set_firetv);
+        if ("sys_settings".equals(action)) return c.getString(R.string.key_act_sys_settings);
+        if ("sys_display".equals(action)) return c.getString(R.string.key_act_sys_display);
+        if ("sys_network".equals(action)) return c.getString(R.string.key_act_sys_network);
+        if ("sys_apps".equals(action)) return c.getString(R.string.key_act_sys_apps);
+        if ("sys_controllers".equals(action)) return c.getString(R.string.key_act_sys_controllers);
+        if ("sys_preferences".equals(action)) return c.getString(R.string.key_act_sys_preferences);
+        if ("sys_device".equals(action)) return c.getString(R.string.key_act_sys_device);
+        if ("sys_accessibility".equals(action)) return c.getString(R.string.key_act_sys_accessibility);
+        if ("sys_equipment".equals(action)) return c.getString(R.string.key_act_sys_equipment);
         if (action.startsWith("app:")) {
             String pkg = action.substring(4);
             return c.getString(R.string.key_act_open_app, getAppLabel(c, pkg));
@@ -366,6 +379,26 @@ public final class RemoteActions {
         }
         if ("picture_settings".equals(action)) {
             openPictureSettings(c);
+            return;
+        }
+        if ("set_homestead".equals(action)) {
+            openHomesteadPanel(c, "settings");
+            return;
+        }
+        if ("set_health".equals(action)) {
+            openHomesteadPanel(c, "health");
+            return;
+        }
+        if ("set_debloat".equals(action)) {
+            openHomesteadPanel(c, "debloat");
+            return;
+        }
+        if ("set_firetv".equals(action)) {
+            openHomesteadPanel(c, "firetv");
+            return;
+        }
+        if (action.startsWith("sys_")) {
+            launchSystemSetting(c, action);
             return;
         }
         if (action.startsWith("app:")) {
@@ -647,6 +680,92 @@ public final class RemoteActions {
             try {
                 s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS);
             } catch (Throwable ignored) { }
+        }
+    }
+
+    public static void openHomesteadPanel(Context c, String panelType) {
+        MainActivity act = HomeRedirectService.getLiveActivity();
+        if (act != null && !act.isFinishing()) {
+            act.openPanelDirect(panelType);
+        } else {
+            Intent it = new Intent(c, MainActivity.class);
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            it.putExtra("show_panel", panelType);
+            c.startActivity(it);
+        }
+    }
+
+    public static void launchSystemSetting(Context c, String actionId) {
+        if ("sys_settings".equals(actionId)) {
+            Intent intent = new Intent(Settings.ACTION_SETTINGS);
+            if (!SetupPanel.start(c, intent)) {
+                intent = new Intent();
+                intent.setComponent(new ComponentName("com.amazon.tv.settings.v2",
+                        "com.amazon.tv.settings.v2.RootSettings"));
+                if (!SetupPanel.start(c, intent)) {
+                    intent = new Intent();
+                    intent.setComponent(new ComponentName("com.amazon.tv.settings",
+                            "com.amazon.tv.settings.RootSettings"));
+                    if (!SetupPanel.start(c, intent) && AdbBridge.isReady(c)) {
+                        AdbBridge.run("input keyevent 176", null);
+                    }
+                }
+            }
+            return;
+        }
+        if ("sys_display".equals(actionId)) {
+            Intent intent = FireTvSettingsPanel.intentFor("com.amazon.device.settings.action.DISPLAY_AND_SOUNDS");
+            if (!SetupPanel.start(c, intent)) {
+                SetupPanel.start(c, new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+            }
+            return;
+        }
+        if ("sys_network".equals(actionId)) {
+            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+            if (!SetupPanel.start(c, intent)) {
+                SetupPanel.start(c, FireTvSettingsPanel.intentFor("android.settings.WIFI_SETTINGS"));
+            }
+            return;
+        }
+        if ("sys_apps".equals(actionId)) {
+            Intent intent = FireTvSettingsPanel.intentFor("com.amazon.device.settings.action.APPLICATIONS");
+            if (!SetupPanel.start(c, intent)) {
+                SetupPanel.start(c, new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
+            }
+            return;
+        }
+        if ("sys_controllers".equals(actionId)) {
+            Intent intent = FireTvSettingsPanel.intentFor("com.amazon.device.settings.action.CONTROLLERS");
+            if (!SetupPanel.start(c, intent)) {
+                SetupPanel.start(c, new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+            }
+            return;
+        }
+        if ("sys_preferences".equals(actionId)) {
+            Intent intent = FireTvSettingsPanel.intentFor("com.amazon.device.settings.action.PREFERENCES");
+            SetupPanel.start(c, intent);
+            return;
+        }
+        if ("sys_device".equals(actionId)) {
+            Intent intent = FireTvSettingsPanel.intentFor("com.amazon.device.settings.action.DEVICE");
+            if (!SetupPanel.start(c, intent)) {
+                SetupPanel.start(c, new Intent(Settings.ACTION_DEVICE_INFO_SETTINGS));
+            }
+            return;
+        }
+        if ("sys_accessibility".equals(actionId)) {
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            if (!SetupPanel.start(c, intent)) {
+                SetupPanel.start(c, FireTvSettingsPanel.intentFor("com.amazon.device.settings.action.ACCESSIBILITY"));
+            }
+            return;
+        }
+        if ("sys_equipment".equals(actionId)) {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.amazon.tv.devicecontrolsettings",
+                    "com.amazon.tv.devicecontrolsettings.screens.main_menu.OzOobeSettingsActivity"));
+            SetupPanel.start(c, intent);
+            return;
         }
     }
 

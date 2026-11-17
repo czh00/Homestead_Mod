@@ -980,6 +980,57 @@ public final class SettingsPanel {
             actions.add(act);
         }
 
+        // Homestead Settings Section
+        final String[] homesteadActions = {
+                "set_homestead",
+                "set_health",
+                "set_debloat",
+                "set_firetv"
+        };
+        p.addHeader(c.getString(R.string.set_remote_sec_homestead));
+        for (int i = 0; i < homesteadActions.length; i++) {
+            final String act = homesteadActions[i];
+            final Panel.Row r = p.addRow(RemoteActions.actionLabel(c, act), "", null);
+            r.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Prefs.setKeyAction(c, keyId, act);
+                    RemoteActions.updateKeyFilter(c);
+                    if (onDone != null) onDone.run();
+                    host.closePanel();
+                }
+            });
+            rows.add(r);
+            actions.add(act);
+        }
+
+        // Built-in System Settings Section
+        final String[] systemActions = {
+                "sys_settings",
+                "sys_display",
+                "sys_network",
+                "sys_apps",
+                "sys_controllers",
+                "sys_preferences",
+                "sys_device",
+                "sys_accessibility",
+                "sys_equipment"
+        };
+        p.addHeader(c.getString(R.string.set_remote_sec_system));
+        for (int i = 0; i < systemActions.length; i++) {
+            final String act = systemActions[i];
+            final Panel.Row r = p.addRow(RemoteActions.actionLabel(c, act), "", null);
+            r.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Prefs.setKeyAction(c, keyId, act);
+                    RemoteActions.updateKeyFilter(c);
+                    if (onDone != null) onDone.run();
+                    host.closePanel();
+                }
+            });
+            rows.add(r);
+            actions.add(act);
+        }
+
         // Installed Apps Section
         p.addHeader(c.getString(R.string.set_remote_sec_apps));
         List<AppModel.Item> items = AppModel.allItems();

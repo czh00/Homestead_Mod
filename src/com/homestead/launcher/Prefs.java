@@ -318,7 +318,7 @@ public final class Prefs {
     }
 
     public static String brightnessMode(Context c) {
-        return sp(c).getString(K_BRIGHTNESS_MODE, BRIGHTNESS_MODE_SYSTEM);
+        return sp(c).getString(K_BRIGHTNESS_MODE, BRIGHTNESS_MODE_OVERLAY);
     }
     public static void setBrightnessMode(Context c, String mode) {
         sp(c).edit().putString(K_BRIGHTNESS_MODE, mode).apply();
