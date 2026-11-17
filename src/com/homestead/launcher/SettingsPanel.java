@@ -17,6 +17,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -99,40 +100,15 @@ public final class SettingsPanel {
 
         p.addHeader(c.getString(R.string.set_remote));
 
-        final Panel.Row chBright = p.addRow(c.getString(R.string.set_remote_ch_brightness),
-                onOff(Prefs.channelBrightness(c)), null).asSwitch();
-        chBright.setHelp(c.getString(R.string.set_remote_ch_brightness_help));
-        chBright.cell.setOnClickListener(new View.OnClickListener() {
+        final Panel.Row remote = p.addRow(c.getString(R.string.set_remote),
+                c.getString(R.string.set_remote_summary), null).opens();
+        remote.setValueColor(0xFF8FA3B8);
+        remote.setHelp(c.getString(R.string.set_remote_help));
+        remote.cell.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                boolean n = !Prefs.channelBrightness(c);
-                Prefs.setChannelBrightness(c, n);
-                chBright.setValue(onOff(n));
-                RemoteActions.updateKeyFilter(c);
-                if (n) RemoteActions.applyBrightness(c);
+                host.showPanel(buildRemote(c, host));
             }
         });
-
-        final Panel.Row redSleep = p.addRow(c.getString(R.string.set_remote_red_sleep),
-                onOff(Prefs.redKeySleep(c)), null).asSwitch();
-        redSleep.setHelp(c.getString(R.string.set_remote_red_sleep_help));
-        redSleep.cell.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                boolean n = !Prefs.redKeySleep(c);
-                Prefs.setRedKeySleep(c, n);
-                redSleep.setValue(onOff(n));
-                RemoteActions.updateKeyFilter(c);
-            }
-        });
-
-        final Panel.Row lastKeyRow = p.addRow(c.getString(R.string.set_remote_last_key),
-                RemoteActions.getLastKeyDescription(c), null);
-        lastKeyRow.setValueColor(0xFF8FA3B8);
-        RemoteActions.setKeyObserver(new Runnable() {
-            public void run() {
-                lastKeyRow.setValue(RemoteActions.getLastKeyDescription(c));
-            }
-        });
-        p.addNote(c.getString(R.string.set_remote_note));
 
         p.addHeader(c.getString(R.string.set_system));
 
@@ -823,6 +799,184 @@ public final class SettingsPanel {
                 p.root.post(new Runnable() { public void run() { start.requestFocus(); } });
             }
         });
+        return p.root;
+    }
+
+    // ---------------------------------------------------------------- remote buttons
+
+    private static View buildRemote(final Context c, final Host host) {
+        final Panel p = new Panel(c, c.getString(R.string.set_remote),
+                c.getString(R.string.set_remote_help), Panel.SHEET);
+
+        // Live Key Monitor Row
+        final Panel.Row lastKeyRow = p.addRow(c.getString(R.string.set_remote_last_key),
+                RemoteActions.getLastKeyDescription(c), null);
+        lastKeyRow.setValueColor(0xFF8FA3B8);
+        RemoteActions.setKeyObserver(new Runnable() {
+            public void run() {
+                lastKeyRow.setValue(RemoteActions.getLastKeyDescription(c));
+            }
+        });
+
+        // 1. Channel buttons
+        p.addHeader(c.getString(R.string.set_remote_sec_channel));
+        final Panel.Row chBright = p.addRow(c.getString(R.string.set_remote_ch_brightness),
+                onOff(Prefs.channelBrightness(c)), null).asSwitch();
+        chBright.setHelp(c.getString(R.string.set_remote_ch_brightness_help));
+        chBright.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                boolean n = !Prefs.channelBrightness(c);
+                Prefs.setChannelBrightness(c, n);
+                chBright.setValue(onOff(n));
+                RemoteActions.updateKeyFilter(c);
+                if (n) RemoteActions.applyBrightness(c);
+            }
+        });
+
+        // 2. Color buttons
+        p.addHeader(c.getString(R.string.set_remote_sec_colors));
+        final String[] colorKeys = { "red", "green", "yellow", "blue" };
+        final int[] colorLabels = {
+                R.string.key_color_red,
+                R.string.key_color_green,
+                R.string.key_color_yellow,
+                R.string.key_color_blue
+        };
+
+        for (int i = 0; i < colorKeys.length; i++) {
+            final String keyId = colorKeys[i];
+            final Panel.Row row = p.addRow(c.getString(colorLabels[i]),
+                    RemoteActions.actionLabel(c, Prefs.keyAction(c, keyId)), null).opens();
+            row.setValueColor(0xFF8FA3B8);
+            row.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    host.showPanel(buildActionPicker(c, host, keyId, new Runnable() {
+                        public void run() {
+                            row.setValue(RemoteActions.actionLabel(c, Prefs.keyAction(c, keyId)));
+                        }
+                    }));
+                }
+            });
+        }
+
+        // 3. Number buttons (0 ~ 9)
+        p.addHeader(c.getString(R.string.set_remote_sec_numbers));
+        for (int i = 0; i <= 9; i++) {
+            final int num = i;
+            final String keyId = "num_" + num;
+            final Panel.Row row = p.addRow(c.getString(R.string.key_num_title, String.valueOf(num)),
+                    RemoteActions.actionLabel(c, Prefs.keyAction(c, keyId)), null).opens();
+            row.setValueColor(0xFF8FA3B8);
+            row.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    host.showPanel(buildActionPicker(c, host, keyId, new Runnable() {
+                        public void run() {
+                            row.setValue(RemoteActions.actionLabel(c, Prefs.keyAction(c, keyId)));
+                        }
+                    }));
+                }
+            });
+        }
+
+        p.addNote(c.getString(R.string.set_remote_note));
+
+        p.addRow(c.getString(R.string.set_back), "", new Runnable() {
+            public void run() { host.closePanel(); }
+        });
+
+        return p.root;
+    }
+
+    private static View buildActionPicker(final Context c, final Host host,
+                                          final String keyId, final Runnable onDone) {
+        String keyTitle = RemoteActions.keyTitle(c, keyId);
+        final Panel p = new Panel(c, keyTitle,
+                c.getString(R.string.set_remote_picker_help), Panel.SHEET);
+
+        final String currentAction = Prefs.keyAction(c, keyId);
+        final List<Panel.Row> rows = new ArrayList<Panel.Row>();
+        final List<String> actions = new ArrayList<String>();
+
+        final Runnable inUse = new Runnable() {
+            public void run() {
+                String now = Prefs.keyAction(c, keyId);
+                for (int i = 0; i < rows.size(); i++) {
+                    boolean on = actions.get(i).equals(now);
+                    rows.get(i).setValue(on ? c.getString(R.string.bg_in_use) : "");
+                    rows.get(i).setValueColor(on ? IN_USE : 0xFF8FA3B8);
+                }
+            }
+        };
+
+        // Standard actions
+        final String[] standardActions = {
+                "",
+                "sleep",
+                "inputs",
+                "mute",
+                "home",
+                "back",
+                "vol_up",
+                "vol_down",
+                "brightness_up",
+                "brightness_down"
+        };
+
+        p.addHeader(c.getString(R.string.set_remote_sec_standard));
+        for (int i = 0; i < standardActions.length; i++) {
+            final String act = standardActions[i];
+            final Panel.Row r = p.addRow(RemoteActions.actionLabel(c, act), "", null);
+            r.cell.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Prefs.setKeyAction(c, keyId, act);
+                    RemoteActions.updateKeyFilter(c);
+                    if (onDone != null) onDone.run();
+                    host.closePanel();
+                }
+            });
+            rows.add(r);
+            actions.add(act);
+        }
+
+        // Installed Apps Section
+        p.addHeader(c.getString(R.string.set_remote_sec_apps));
+        List<AppModel.Item> items = AppModel.allItems();
+        Set<String> seenPkgs = new HashSet<String>();
+        if (items != null) {
+            for (int i = 0; i < items.size(); i++) {
+                AppModel.Item it = items.get(i);
+                if (it.type == AppModel.TYPE_APP && it.pkg != null && !seenPkgs.contains(it.pkg)) {
+                    seenPkgs.add(it.pkg);
+                    final String act = "app:" + it.pkg;
+                    final Panel.Row r = p.addRow(it.label, "", null);
+                    r.cell.setOnClickListener(new View.OnClickListener() {
+                        public void onClick(View v) {
+                            Prefs.setKeyAction(c, keyId, act);
+                            RemoteActions.updateKeyFilter(c);
+                            if (onDone != null) onDone.run();
+                            host.closePanel();
+                        }
+                    });
+                    rows.add(r);
+                    actions.add(act);
+                }
+            }
+        }
+
+        inUse.run();
+
+        p.addRow(c.getString(R.string.set_back), "", new Runnable() {
+            public void run() { host.closePanel(); }
+        });
+
+        int idx = actions.indexOf(currentAction);
+        final View start = rows.get(Math.max(0, idx)).cell;
+        p.root.post(new Runnable() {
+            public void run() {
+                p.root.post(new Runnable() { public void run() { start.requestFocus(); } });
+            }
+        });
+
         return p.root;
     }
 

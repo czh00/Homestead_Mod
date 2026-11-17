@@ -288,11 +288,20 @@ public final class Prefs {
         sp(c).edit().putBoolean(K_REMOTE_CH_BRIGHTNESS, on).apply();
     }
 
+    public static String keyAction(Context c, String keyId) {
+        // Red defaults to "sleep" to preserve original behavior
+        String def = "red".equals(keyId) ? "sleep" : "";
+        return sp(c).getString("remote_action_" + keyId, def);
+    }
+    public static void setKeyAction(Context c, String keyId, String action) {
+        sp(c).edit().putString("remote_action_" + keyId, action == null ? "" : action).apply();
+    }
+
     public static boolean redKeySleep(Context c) {
-        return sp(c).getBoolean(K_REMOTE_RED_SLEEP, false);
+        return "sleep".equals(keyAction(c, "red"));
     }
     public static void setRedKeySleep(Context c, boolean on) {
-        sp(c).edit().putBoolean(K_REMOTE_RED_SLEEP, on).apply();
+        setKeyAction(c, "red", on ? "sleep" : "");
     }
 
     public static int screenBrightness(Context c) {

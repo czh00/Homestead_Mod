@@ -15,9 +15,13 @@ package com.homestead.launcher;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.GradientDrawable;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -29,6 +33,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -38,7 +43,7 @@ import android.widget.Toast;
 /**
  * Handles remote control key shortcuts:
  * 1. Channel Up / Down keys for global screen brightness adjustment (+/- 10%) with overlay dimmer & OSD.
- * 2. Red button for TV hardware sleep / power toggle (clean native sleep, no blocking overlay).
+ * 2. Four color keys (Red, Green, Yellow, Blue) and number keys (0-9) mapped to custom actions.
  */
 public final class RemoteActions {
 
@@ -88,6 +93,45 @@ public final class RemoteActions {
         }
     }
 
+    public static String keyTitle(Context c, String keyId) {
+        if ("red".equals(keyId)) return c.getString(R.string.key_color_red);
+        if ("green".equals(keyId)) return c.getString(R.string.key_color_green);
+        if ("yellow".equals(keyId)) return c.getString(R.string.key_color_yellow);
+        if ("blue".equals(keyId)) return c.getString(R.string.key_color_blue);
+        if (keyId != null && keyId.startsWith("num_")) {
+            return c.getString(R.string.key_num_title, keyId.substring(4));
+        }
+        return keyId;
+    }
+
+    public static String getAppLabel(Context c, String pkg) {
+        try {
+            PackageManager pm = c.getPackageManager();
+            ApplicationInfo ai = pm.getApplicationInfo(pkg, 0);
+            return pm.getApplicationLabel(ai).toString();
+        } catch (Throwable t) {
+            return pkg;
+        }
+    }
+
+    public static String actionLabel(Context c, String action) {
+        if (action == null || action.isEmpty()) return c.getString(R.string.key_act_none);
+        if ("sleep".equals(action)) return c.getString(R.string.key_act_sleep);
+        if ("inputs".equals(action)) return c.getString(R.string.key_act_inputs);
+        if ("mute".equals(action)) return c.getString(R.string.key_act_mute);
+        if ("home".equals(action)) return c.getString(R.string.key_act_home);
+        if ("back".equals(action)) return c.getString(R.string.key_act_back);
+        if ("vol_up".equals(action)) return c.getString(R.string.key_act_vol_up);
+        if ("vol_down".equals(action)) return c.getString(R.string.key_act_vol_down);
+        if ("brightness_up".equals(action)) return c.getString(R.string.key_act_bright_up);
+        if ("brightness_down".equals(action)) return c.getString(R.string.key_act_bright_down);
+        if (action.startsWith("app:")) {
+            String pkg = action.substring(4);
+            return c.getString(R.string.key_act_open_app, getAppLabel(c, pkg));
+        }
+        return action;
+    }
+
     public static boolean isChannelUp(int code) {
         return code == KeyEvent.KEYCODE_CHANNEL_UP
                 || code == KeyEvent.KEYCODE_PAGE_UP
@@ -115,17 +159,56 @@ public final class RemoteActions {
                 || code == KeyEvent.KEYCODE_TV_TELETEXT;
     }
 
+    public static boolean isGreenKey(int code) {
+        return code == KeyEvent.KEYCODE_PROG_GREEN
+                || code == KeyEvent.KEYCODE_BUTTON_2
+                || code == KeyEvent.KEYCODE_BUTTON_B
+                || code == KeyEvent.KEYCODE_F2
+                || code == KeyEvent.KEYCODE_F10;
+    }
+
+    public static boolean isYellowKey(int code) {
+        return code == KeyEvent.KEYCODE_PROG_YELLOW
+                || code == KeyEvent.KEYCODE_BUTTON_3
+                || code == KeyEvent.KEYCODE_BUTTON_X
+                || code == KeyEvent.KEYCODE_BUTTON_C
+                || code == KeyEvent.KEYCODE_F3
+                || code == KeyEvent.KEYCODE_F11;
+    }
+
+    public static boolean isBlueKey(int code) {
+        return code == KeyEvent.KEYCODE_PROG_BLUE
+                || code == KeyEvent.KEYCODE_BUTTON_4
+                || code == KeyEvent.KEYCODE_BUTTON_Y
+                || code == KeyEvent.KEYCODE_BUTTON_Z
+                || code == KeyEvent.KEYCODE_F4
+                || code == KeyEvent.KEYCODE_F12;
+    }
+
+    public static int getNumberFromKey(int code) {
+        if (code >= KeyEvent.KEYCODE_0 && code <= KeyEvent.KEYCODE_9) {
+            return code - KeyEvent.KEYCODE_0;
+        }
+        if (code >= KeyEvent.KEYCODE_NUMPAD_0 && code <= KeyEvent.KEYCODE_NUMPAD_9) {
+            return code - KeyEvent.KEYCODE_NUMPAD_0;
+        }
+        return -1;
+    }
+
     public static boolean isHandledKey(Context c, int keyCode) {
         if (Prefs.channelBrightness(c)) {
             if (isChannelUp(keyCode) || isChannelDown(keyCode)) {
                 return true;
             }
         }
-        if (Prefs.redKeySleep(c)) {
-            if (isRedKey(keyCode)) {
-                return true;
-            }
-        }
+        if (isRedKey(keyCode) && !Prefs.keyAction(c, "red").isEmpty()) return true;
+        if (isGreenKey(keyCode) && !Prefs.keyAction(c, "green").isEmpty()) return true;
+        if (isYellowKey(keyCode) && !Prefs.keyAction(c, "yellow").isEmpty()) return true;
+        if (isBlueKey(keyCode) && !Prefs.keyAction(c, "blue").isEmpty()) return true;
+
+        int num = getNumberFromKey(keyCode);
+        if (num >= 0 && !Prefs.keyAction(c, "num_" + num).isEmpty()) return true;
+
         return false;
     }
 
@@ -145,6 +228,7 @@ public final class RemoteActions {
             return false;
         }
 
+        // 1. Channel buttons
         if (Prefs.channelBrightness(c)) {
             long now = SystemClock.uptimeMillis();
             if (isChannelUp(code)) {
@@ -163,13 +247,189 @@ public final class RemoteActions {
             }
         }
 
-        if (Prefs.redKeySleep(c)) {
-            if (isRedKey(code)) {
-                triggerSleep(c);
+        // 2. Color buttons
+        if (isRedKey(code)) {
+            String act = Prefs.keyAction(c, "red");
+            if (!act.isEmpty()) {
+                executeAction(c, act);
+                return true;
+            }
+        }
+        if (isGreenKey(code)) {
+            String act = Prefs.keyAction(c, "green");
+            if (!act.isEmpty()) {
+                executeAction(c, act);
+                return true;
+            }
+        }
+        if (isYellowKey(code)) {
+            String act = Prefs.keyAction(c, "yellow");
+            if (!act.isEmpty()) {
+                executeAction(c, act);
+                return true;
+            }
+        }
+        if (isBlueKey(code)) {
+            String act = Prefs.keyAction(c, "blue");
+            if (!act.isEmpty()) {
+                executeAction(c, act);
                 return true;
             }
         }
 
+        // 3. Number buttons (0 ~ 9)
+        int num = getNumberFromKey(code);
+        if (num >= 0) {
+            String act = Prefs.keyAction(c, "num_" + num);
+            if (!act.isEmpty()) {
+                executeAction(c, act);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void executeAction(Context c, String action) {
+        if (action == null || action.isEmpty()) return;
+        if ("sleep".equals(action)) {
+            triggerSleep(c);
+            return;
+        }
+        if ("inputs".equals(action)) {
+            openInputs(c);
+            return;
+        }
+        if ("mute".equals(action)) {
+            toggleMute(c);
+            return;
+        }
+        if ("home".equals(action)) {
+            goHome(c);
+            return;
+        }
+        if ("back".equals(action)) {
+            goBack(c);
+            return;
+        }
+        if ("vol_up".equals(action)) {
+            adjustVolume(c, AudioManager.ADJUST_RAISE);
+            return;
+        }
+        if ("vol_down".equals(action)) {
+            adjustVolume(c, AudioManager.ADJUST_LOWER);
+            return;
+        }
+        if ("brightness_up".equals(action)) {
+            adjustBrightness(c, 10);
+            return;
+        }
+        if ("brightness_down".equals(action)) {
+            adjustBrightness(c, -10);
+            return;
+        }
+        if (action.startsWith("app:")) {
+            launchApp(c, action.substring(4));
+            return;
+        }
+    }
+
+    private static void openInputs(Context c) {
+        String[] actions = {
+                "com.amazon.device.settings.action.INPUTS",
+                "android.intent.action.VIEW_INPUTS",
+                "android.media.tv.action.VIEW_INPUTS"
+        };
+        for (int i = 0; i < actions.length; i++) {
+            try {
+                Intent it = new Intent(actions[i]);
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                c.startActivity(it);
+                return;
+            } catch (Throwable ignored) { }
+        }
+        if (AdbBridge.isReady(c)) {
+            AdbBridge.run("input keyevent 178", null);
+        }
+    }
+
+    private static void toggleMute(Context c) {
+        try {
+            AudioManager am = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                if (Build.VERSION.SDK_INT >= 23) {
+                    am.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI);
+                } else {
+                    boolean muted = am.isStreamMute(AudioManager.STREAM_MUSIC);
+                    am.setStreamMute(AudioManager.STREAM_MUSIC, !muted);
+                }
+            }
+        } catch (Throwable ignored) { }
+        if (AdbBridge.isReady(c)) {
+            AdbBridge.run("input keyevent 164", null);
+        }
+    }
+
+    private static void adjustVolume(Context c, int direction) {
+        try {
+            AudioManager am = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI);
+            }
+        } catch (Throwable ignored) { }
+        if (AdbBridge.isReady(c)) {
+            int key = (direction == AudioManager.ADJUST_RAISE) ? 24 : 25;
+            AdbBridge.run("input keyevent " + key, null);
+        }
+    }
+
+    private static void goHome(Context c) {
+        HomeRedirectService s = HomeRedirectService.getInstance();
+        if (s != null) {
+            try {
+                s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
+                return;
+            } catch (Throwable ignored) { }
+        }
+        MainActivity.open(c);
+    }
+
+    private static void goBack(Context c) {
+        HomeRedirectService s = HomeRedirectService.getInstance();
+        if (s != null) {
+            try {
+                s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+                return;
+            } catch (Throwable ignored) { }
+        }
+        if (AdbBridge.isReady(c)) {
+            AdbBridge.run("input keyevent 4", null);
+        }
+    }
+
+    private static void launchApp(Context c, String pkg) {
+        try {
+            PackageManager pm = c.getPackageManager();
+            Intent it = pm.getLeanbackLaunchIntentForPackage(pkg);
+            if (it == null) it = pm.getLaunchIntentForPackage(pkg);
+            if (it != null) {
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                c.startActivity(it);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "launchApp failed for " + pkg + ": " + t);
+        }
+    }
+
+    public static boolean hasAnyCustomKey(Context c) {
+        if (Prefs.channelBrightness(c)) return true;
+        if (!Prefs.keyAction(c, "red").isEmpty()) return true;
+        if (!Prefs.keyAction(c, "green").isEmpty()) return true;
+        if (!Prefs.keyAction(c, "yellow").isEmpty()) return true;
+        if (!Prefs.keyAction(c, "blue").isEmpty()) return true;
+        for (int i = 0; i <= 9; i++) {
+            if (!Prefs.keyAction(c, "num_" + i).isEmpty()) return true;
+        }
         return false;
     }
 
@@ -184,7 +444,7 @@ public final class RemoteActions {
                     if (info == null) {
                         info = new AccessibilityServiceInfo();
                     }
-                    boolean filter = Prefs.channelBrightness(c) || Prefs.redKeySleep(c);
+                    boolean filter = hasAnyCustomKey(c);
                     int flag = AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
                     if (filter) {
                         info.flags |= flag;
@@ -368,15 +628,18 @@ public final class RemoteActions {
     private static void hideHud() {
         if (hudView != null) {
             try {
-                ViewGroup parent = (ViewGroup) hudView.getParent();
-                if (parent != null) {
-                    parent.removeView(hudView);
-                } else {
-                    HomeRedirectService s = HomeRedirectService.getInstance();
-                    if (s != null) {
-                        WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
-                        wm.removeView(hudView);
+                HomeRedirectService s = HomeRedirectService.getInstance();
+                if (s != null) {
+                    WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
+                    if (wm != null) {
+                        try {
+                            wm.removeView(hudView);
+                        } catch (Throwable ignored) { }
                     }
+                }
+                ViewParent parent = hudView.getParent();
+                if (parent instanceof ViewGroup) {
+                    ((ViewGroup) parent).removeView(hudView);
                 }
             } catch (Throwable ignored) { }
             hudView = null;
