@@ -144,6 +144,7 @@
   <string name="key_act_sys_device">Mein Fire TV (Info)</string>
   <string name="key_act_sys_accessibility">Barrierefreiheit</string>
   <string name="key_act_sys_equipment">Gerätesteuerung</string>
+  <string name="set_remote_homestead_settings_help">Das Hauptmenü der Homestead-Einstellungen öffnen.</string>
   <string name="set_remote_picture_settings_help">Öffnet das TV-Menü für Bild, Hintergrundbeleuchtung und Anzeigemodi.</string>
   <string name="set_remote_bright_mode">Helligkeitsanpassung</string>
   <string name="set_remote_bright_mode_system">Systemhelligkeit</string>

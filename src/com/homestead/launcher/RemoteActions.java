@@ -821,14 +821,17 @@ public final class RemoteActions {
     }
 
     public static void openHomesteadPanel(Context c, String panelType) {
-        MainActivity act = HomeRedirectService.getLiveActivity();
-        if (act != null && !act.isFinishing()) {
-            act.openPanelDirect(panelType);
-        } else {
+        try {
             Intent it = new Intent(c, MainActivity.class);
             it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             it.putExtra("show_panel", panelType);
             c.startActivity(it);
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to start MainActivity for panel " + panelType, t);
+        }
+        MainActivity act = HomeRedirectService.getLiveActivity();
+        if (act != null && !act.isFinishing()) {
+            act.openPanelDirect(panelType);
         }
     }
 

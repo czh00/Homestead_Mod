@@ -144,6 +144,7 @@
   <string name="key_act_sys_device">My Fire TV (About)</string>
   <string name="key_act_sys_accessibility">Accessibility</string>
   <string name="key_act_sys_equipment">Equipment Control</string>
+  <string name="set_remote_homestead_settings_help">Open the main Homestead launcher settings panel.</string>
   <string name="set_remote_picture_settings_help">Open the TV native picture, backlight and display options menu.</string>
   <string name="set_remote_bright_mode">Brightness control mode</string>
   <string name="set_remote_bright_mode_system">System brightness</string>

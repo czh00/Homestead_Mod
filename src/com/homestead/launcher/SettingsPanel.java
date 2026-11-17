@@ -879,6 +879,12 @@ public final class SettingsPanel {
             }
         });
 
+        p.addRow(c.getString(R.string.key_act_set_homestead), "", new Runnable() {
+            public void run() {
+                host.closePanel();
+            }
+        }).opens().setHelp(c.getString(R.string.set_remote_homestead_settings_help));
+
         p.addRow(c.getString(R.string.key_act_picture_settings), "", new Runnable() {
             public void run() {
                 RemoteActions.openPictureSettings(c);
@@ -1116,8 +1122,9 @@ public final class SettingsPanel {
         // Standard actions
         final String[] standardActions = {
                 "",
-                "sleep",
+                "set_homestead",
                 "picture_settings",
+                "sleep",
                 "inputs",
                 "cycle_inputs",
                 "hdmi_1",

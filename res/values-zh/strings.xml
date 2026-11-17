@@ -131,7 +131,7 @@
   <string name="key_act_none">無動作</string>
   <string name="key_act_sleep">待機 / 休眠</string>
   <string name="key_act_picture_settings">電視原廠畫面設定</string>
-  <string name="key_act_set_homestead">Homestead 桌面設定</string>
+  <string name="key_act_set_homestead">Homestead 設定</string>
   <string name="key_act_set_health">電視狀態檢測 (TV Health)</string>
   <string name="key_act_set_debloat">系統精簡設定 (Debloat)</string>
   <string name="key_act_set_firetv">Fire TV 設定專區</string>
@@ -144,6 +144,7 @@
   <string name="key_act_sys_device">我的 Fire TV (關於裝置)</string>
   <string name="key_act_sys_accessibility">無障礙與輔助功能</string>
   <string name="key_act_sys_equipment">設備控制 (音響/擴大機)</string>
+  <string name="set_remote_homestead_settings_help">開啟 Homestead 桌面各項功能設定面板。</string>
   <string name="set_remote_picture_settings_help">開啟電視原廠的畫面、背光與影像模式調整選單。</string>
   <string name="set_remote_bright_mode">亮度調整機制</string>
   <string name="set_remote_bright_mode_system">系統原生亮度</string>
