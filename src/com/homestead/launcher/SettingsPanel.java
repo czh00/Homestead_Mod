@@ -808,13 +808,30 @@ public final class SettingsPanel {
         final Panel p = new Panel(c, c.getString(R.string.set_remote),
                 c.getString(R.string.set_remote_help), Panel.SHEET);
 
-        // Live Key Monitor Row
+        // Live Key Monitor & Diagnostic Row
         final Panel.Row lastKeyRow = p.addRow(c.getString(R.string.set_remote_last_key),
-                RemoteActions.getLastKeyDescription(c), null);
-        lastKeyRow.setValueColor(0xFF8FA3B8);
-        RemoteActions.setKeyObserver(new Runnable() {
+                RemoteActions.getLastKeyDescription(c), null).opens();
+        lastKeyRow.setHelp(c.getString(R.string.set_remote_last_key_help));
+        lastKeyRow.setValueColor(0xFFA7D28F);
+        final Runnable remoteObserver = new Runnable() {
             public void run() {
                 lastKeyRow.setValue(RemoteActions.getLastKeyDescription(c));
+            }
+        };
+        RemoteActions.setKeyObserver(remoteObserver);
+        lastKeyRow.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                host.showPanel(buildKeyTest(c, host, remoteObserver));
+            }
+        });
+
+        p.root.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            public void onViewAttachedToWindow(View v) {
+                RemoteActions.setKeyTesting(true);
+            }
+            public void onViewDetachedFromWindow(View v) {
+                RemoteActions.setKeyTesting(false);
+                RemoteActions.setKeyObserver(null);
             }
         });
 
@@ -942,7 +959,134 @@ public final class SettingsPanel {
         p.addNote(c.getString(R.string.set_remote_note));
 
         p.addRow(c.getString(R.string.set_back), "", new Runnable() {
-            public void run() { host.closePanel(); }
+            public void run() {
+                RemoteActions.setKeyTesting(false);
+                RemoteActions.setKeyObserver(null);
+                host.closePanel();
+            }
+        });
+
+        return p.root;
+    }
+
+    private static View buildKeyTest(final Context c, final Host host, final Runnable onExit) {
+        final Panel p = new Panel(c, c.getString(R.string.key_test_title),
+                c.getString(R.string.key_test_sub), Panel.SHEET);
+
+        final Panel.Row keyNameRow = p.addRow(c.getString(R.string.key_test_detected_name),
+                RemoteActions.getLastKeyCode() == 0 ? c.getString(R.string.set_remote_none)
+                        : (RemoteActions.getLastKeyName() + " (" + RemoteActions.getLastKeyCode() + ")"), null);
+        keyNameRow.setValueColor(0xFFE8EEF6);
+
+        final Panel.Row statusRow = p.addRow(c.getString(R.string.key_test_status),
+                RemoteActions.getLastKeyCode() == 0 ? c.getString(R.string.key_test_wait_key)
+                        : c.getString(R.string.key_test_status_intercepted), null);
+        statusRow.setValueColor(0xFFA7D28F);
+
+        final Panel.Row mappingRow = p.addRow(c.getString(R.string.key_test_mapping),
+                RemoteActions.getLastKeyCode() == 0 ? "-" : RemoteActions.getKeyMappingDescription(c), null);
+        mappingRow.setValueColor(0xFF8FA3B8);
+
+        final Panel.Row actionRow = p.addRow(c.getString(R.string.key_test_action),
+                RemoteActions.getLastKeyCode() == 0 ? "-" : RemoteActions.getKeyActionDescription(c), null);
+        actionRow.setValueColor(0xFF8FA3B8);
+
+        final Panel.Row configRow = p.addRow(c.getString(R.string.key_test_config_btn), "", null).opens();
+        configRow.setValueColor(0xFF8FA3B8);
+
+        final Panel.Row runRow = p.addRow(c.getString(R.string.key_test_run_btn), "", new Runnable() {
+            public void run() {
+                int code = RemoteActions.getLastKeyCode();
+                String keyId = RemoteActions.findKeyId(code);
+                if (keyId != null) {
+                    String act = Prefs.keyAction(c, keyId);
+                    if (!act.isEmpty()) {
+                        RemoteActions.executeAction(c, act);
+                    }
+                }
+            }
+        });
+        runRow.setHelp(c.getString(R.string.key_test_run_help));
+
+        p.addNote(c.getString(R.string.key_test_note));
+
+        p.addRow(c.getString(R.string.set_back), "", new Runnable() {
+            public void run() {
+                host.closePanel();
+            }
+        });
+
+        final Runnable updateUi = new Runnable() {
+            public void run() {
+                int code = RemoteActions.getLastKeyCode();
+                if (code == 0) {
+                    keyNameRow.setValue(c.getString(R.string.set_remote_none));
+                    statusRow.setValue(c.getString(R.string.key_test_wait_key));
+                    statusRow.setValueColor(0xFF8FA3B8);
+                    mappingRow.setValue("-");
+                    actionRow.setValue("-");
+                    configRow.cell.setEnabled(false);
+                    configRow.setValue(c.getString(R.string.key_test_press_to_config));
+                    runRow.cell.setEnabled(false);
+                    runRow.setValue(c.getString(R.string.key_test_press_to_run));
+                    return;
+                }
+                keyNameRow.setValue(RemoteActions.getLastKeyName() + " (" + code + ")");
+                String keyId = RemoteActions.findKeyId(code);
+                if (keyId != null) {
+                    statusRow.setValue(c.getString(R.string.key_test_status_intercepted));
+                    statusRow.setValueColor(0xFFA7D28F);
+                    mappingRow.setValue(RemoteActions.keyTitle(c, keyId));
+                    String act = Prefs.keyAction(c, keyId);
+                    actionRow.setValue(act.isEmpty() ? c.getString(R.string.key_act_none)
+                            : RemoteActions.actionLabel(c, act));
+                    configRow.cell.setEnabled(true);
+                    configRow.setValue(RemoteActions.keyTitle(c, keyId));
+                    runRow.cell.setEnabled(!act.isEmpty());
+                    runRow.setValue(act.isEmpty() ? c.getString(R.string.key_act_none)
+                            : RemoteActions.actionLabel(c, act));
+                } else {
+                    statusRow.setValue(c.getString(R.string.key_test_status_generic));
+                    statusRow.setValueColor(0xFF8FA3B8);
+                    mappingRow.setValue(c.getString(R.string.key_test_unmapped));
+                    actionRow.setValue("-");
+                    configRow.cell.setEnabled(false);
+                    configRow.setValue("-");
+                    runRow.cell.setEnabled(false);
+                    runRow.setValue("-");
+                }
+            }
+        };
+
+        configRow.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                int code = RemoteActions.getLastKeyCode();
+                final String keyId = RemoteActions.findKeyId(code);
+                if (keyId != null) {
+                    host.showPanel(buildActionPicker(c, host, keyId, new Runnable() {
+                        public void run() {
+                            updateUi.run();
+                        }
+                    }));
+                }
+            }
+        });
+
+        updateUi.run();
+        RemoteActions.setKeyObserver(updateUi);
+
+        p.root.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            public void onViewAttachedToWindow(View v) {
+                RemoteActions.setKeyTesting(true);
+                RemoteActions.setKeyObserver(updateUi);
+            }
+            public void onViewDetachedFromWindow(View v) {
+                RemoteActions.setKeyTesting(true);
+                if (onExit != null) {
+                    RemoteActions.setKeyObserver(onExit);
+                    onExit.run();
+                }
+            }
         });
 
         return p.root;

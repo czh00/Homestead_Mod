@@ -78,15 +78,89 @@ public final class RemoteActions {
 
     private RemoteActions() { }
 
+    private static volatile boolean keyTesting = false;
+
+    public static void setKeyTesting(boolean testing) {
+        keyTesting = testing;
+    }
+
+    public static boolean isKeyTesting() {
+        return keyTesting;
+    }
+
+    public static int getLastKeyCode() {
+        return lastKeyCode;
+    }
+
+    public static String getLastKeyName() {
+        return lastKeyName;
+    }
+
     public static void setKeyObserver(Runnable r) {
         keyObserver = r;
+    }
+
+    public static boolean isNavKey(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP:
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_NUMPAD_ENTER:
+            case KeyEvent.KEYCODE_BACK:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static String findKeyId(int keyCode) {
+        if (isChannelUp(keyCode)) return "ch_up";
+        if (isChannelDown(keyCode)) return "ch_down";
+        if (isRedKey(keyCode)) return "red";
+        if (isGreenKey(keyCode)) return "green";
+        if (isYellowKey(keyCode)) return "yellow";
+        if (isBlueKey(keyCode)) return "blue";
+        int appIdx = getAppKeyIndex(keyCode);
+        if (appIdx >= 1 && appIdx <= 4) return "app_" + appIdx;
+        int num = getNumberFromKey(keyCode);
+        if (num >= 0 && num <= 9) return "num_" + num;
+        return null;
+    }
+
+    public static String getKeyMappingDescription(Context c) {
+        if (lastKeyCode == 0) return "-";
+        String keyId = findKeyId(lastKeyCode);
+        if (keyId != null) {
+            return keyTitle(c, keyId);
+        }
+        return c.getString(R.string.key_test_unmapped);
+    }
+
+    public static String getKeyActionDescription(Context c) {
+        if (lastKeyCode == 0) return "-";
+        String keyId = findKeyId(lastKeyCode);
+        if (keyId != null) {
+            String act = Prefs.keyAction(c, keyId);
+            return act.isEmpty() ? c.getString(R.string.key_act_none) : actionLabel(c, act);
+        }
+        return c.getString(R.string.key_act_none);
     }
 
     public static String getLastKeyDescription(Context c) {
         if (lastKeyCode == 0) {
             return c.getString(R.string.set_remote_none);
         }
-        return lastKeyName + " (" + lastKeyCode + ")";
+        String keyId = findKeyId(lastKeyCode);
+        if (keyId != null) {
+            String title = keyTitle(c, keyId);
+            String act = Prefs.keyAction(c, keyId);
+            String actLabel = act.isEmpty() ? c.getString(R.string.key_act_none) : actionLabel(c, act);
+            return lastKeyName + " (" + lastKeyCode + ")  ✔ " + title + "  [" + actLabel + "]";
+        }
+        return lastKeyName + " (" + lastKeyCode + ")  ✔ " + c.getString(R.string.set_remote_key_captured);
     }
 
     private static void recordKey(final Context c, final KeyEvent event) {
@@ -248,9 +322,22 @@ public final class RemoteActions {
     }
 
     public static boolean handleKeyEvent(final Context c, KeyEvent event) {
-        recordKey(c, event);
-
         int code = event.getKeyCode();
+
+        // In test mode, allow UI navigation keys (D-pad & Back) to pass through to the UI
+        if (keyTesting && isNavKey(code)) {
+            return false;
+        }
+
+        if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+            recordKey(c, event);
+        }
+
+        // In test mode, consume all non-nav keys so they never trigger actions or system default apps
+        if (keyTesting) {
+            return true;
+        }
+
         if (!isHandledKey(c, code)) {
             return false;
         }
