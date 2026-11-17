@@ -163,6 +163,9 @@ public class MainActivity extends Activity implements HomeGrid.Listener {
             receiversOn = true;
         }
         if (home != null) home.updateClock();
+        if (Prefs.channelBrightness(this)) {
+            RemoteActions.applyBrightness(this);
+        }
     }
 
     @Override

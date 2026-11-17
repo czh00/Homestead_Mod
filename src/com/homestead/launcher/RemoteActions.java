@@ -21,6 +21,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.util.TypedValue;
@@ -36,8 +37,8 @@ import android.widget.Toast;
 
 /**
  * Handles remote control key shortcuts:
- * 1. Channel Up / Down keys for screen brightness adjustment (+/- 10%) with in-app/overlay dimmer & OSD.
- * 2. Red button for sleep / power switch.
+ * 1. Channel Up / Down keys for global screen brightness adjustment (+/- 10%) with overlay dimmer & OSD.
+ * 2. Red button for TV hardware sleep / power toggle (clean native sleep, no blocking overlay).
  */
 public final class RemoteActions {
 
@@ -48,11 +49,13 @@ public final class RemoteActions {
     private static View hudView;
     private static TextView hudText;
     private static View hudBarFill;
-    private static View sleepView;
 
     private static int lastKeyCode = 0;
     private static String lastKeyName = "";
     private static Runnable keyObserver;
+
+    private static long lastAdjustTime = 0L;
+    private static final long ADJUST_DEBOUNCE_MS = 160L;
 
     private static final Runnable HIDE_HUD = new Runnable() {
         @Override
@@ -134,6 +137,7 @@ public final class RemoteActions {
             return false;
         }
 
+        // Consume UP events so they never leak to native Live TV or other apps
         if (event.getAction() == KeyEvent.ACTION_UP) {
             return true;
         }
@@ -142,12 +146,19 @@ public final class RemoteActions {
         }
 
         if (Prefs.channelBrightness(c)) {
+            long now = SystemClock.uptimeMillis();
             if (isChannelUp(code)) {
-                adjustBrightness(c, 10);
+                if (now - lastAdjustTime >= ADJUST_DEBOUNCE_MS) {
+                    lastAdjustTime = now;
+                    adjustBrightness(c, 10);
+                }
                 return true;
             }
             if (isChannelDown(code)) {
-                adjustBrightness(c, -10);
+                if (now - lastAdjustTime >= ADJUST_DEBOUNCE_MS) {
+                    lastAdjustTime = now;
+                    adjustBrightness(c, -10);
+                }
                 return true;
             }
         }
@@ -203,101 +214,75 @@ public final class RemoteActions {
             public void run() {
                 int level = Prefs.screenBrightness(c);
 
-                // 1. If an Activity is live, adjust window brightness directly
-                MainActivity act = getActiveActivity(c);
-                if (act != null && !act.isFinishing()) {
-                    try {
-                        WindowManager.LayoutParams lp = act.getWindow().getAttributes();
-                        lp.screenBrightness = level / 100f;
-                        act.getWindow().setAttributes(lp);
-                    } catch (Throwable t) {
-                        Log.w(TAG, "set window screenBrightness failed: " + t);
-                    }
-                }
-
-                // 2. Try Settings.System.SCREEN_BRIGHTNESS
+                // 1. Try system-wide SCREEN_BRIGHTNESS setting
                 try {
                     int sysVal = Math.round(level * 255f / 100f);
                     Settings.System.putInt(c.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, sysVal);
                 } catch (Throwable ignored) { }
 
-                // 3. Try ADB if available
+                // 2. Try ADB if available
                 if (AdbBridge.isReady(c)) {
                     int sysVal = Math.round(level * 255f / 100f);
                     AdbBridge.run("settings put system screen_brightness " + sysVal, null);
                 }
 
-                // 4. Update Dimmer View
-                updateDimmer(c, level);
+                // 3. Update Global Dimmer View (covers entire TV across all apps & inputs)
+                updateGlobalDimmer(c, level);
             }
         });
     }
 
-    private static MainActivity getActiveActivity(Context c) {
-        if (c instanceof MainActivity) return (MainActivity) c;
-        MainActivity live = HomeRedirectService.getLiveActivity();
-        if (live != null && !live.isFinishing()) return live;
-        return null;
-    }
-
-    private static void updateDimmer(Context c, int level) {
-        MainActivity act = getActiveActivity(c);
+    private static void updateGlobalDimmer(Context c, int level) {
         HomeRedirectService s = HomeRedirectService.getInstance();
+        if (s == null) {
+            // Service not yet connected: fall back to active activity window if present
+            MainActivity act = HomeRedirectService.getLiveActivity();
+            if (act != null && !act.isFinishing()) {
+                try {
+                    WindowManager.LayoutParams lp = act.getWindow().getAttributes();
+                    lp.screenBrightness = level / 100f;
+                    act.getWindow().setAttributes(lp);
+                } catch (Throwable ignored) { }
+            }
+            return;
+        }
+
+        WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null) return;
 
         if (level >= 100) {
             if (dimmerView != null) {
                 try {
-                    ViewGroup parent = (ViewGroup) dimmerView.getParent();
-                    if (parent != null) parent.removeView(dimmerView);
-                    else if (s != null) {
-                        WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
-                        wm.removeView(dimmerView);
-                    }
+                    wm.removeView(dimmerView);
                 } catch (Throwable ignored) { }
                 dimmerView = null;
             }
             return;
         }
 
-        int alpha = Math.min(210, Math.max(0, Math.round((100 - level) * 2.2f)));
+        // Alpha calculation: from 0 (at 100%) to ~215 (at 10%)
+        int alpha = Math.min(215, Math.max(0, Math.round((100 - level) * 2.3f)));
 
-        if (act != null && !act.isFinishing()) {
-            ViewGroup decor = (ViewGroup) act.getWindow().getDecorView();
-            if (dimmerView == null || dimmerView.getParent() != decor) {
-                if (dimmerView != null && dimmerView.getParent() != null) {
-                    ((ViewGroup) dimmerView.getParent()).removeView(dimmerView);
-                }
-                dimmerView = new View(act);
-                dimmerView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
-                FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                decor.addView(dimmerView, flp);
-            } else {
-                dimmerView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
-                dimmerView.setVisibility(View.VISIBLE);
+        if (dimmerView == null) {
+            dimmerView = new View(s);
+            dimmerView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                            | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                            | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                            | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSLUCENT);
+            try {
+                wm.addView(dimmerView, lp);
+            } catch (Throwable t) {
+                Log.w(TAG, "add global dimmer failed: " + t);
             }
-        } else if (s != null) {
-            WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
-            if (dimmerView == null) {
-                dimmerView = new View(s);
-                dimmerView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
-                WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                        PixelFormat.TRANSLUCENT);
-                try {
-                    wm.addView(dimmerView, lp);
-                } catch (Throwable t) {
-                    Log.w(TAG, "add overlay dimmer failed: " + t);
-                }
-            } else {
-                dimmerView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
-            }
+        } else {
+            dimmerView.setBackgroundColor(Color.argb(alpha, 0, 0, 0));
+            dimmerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -305,42 +290,29 @@ public final class RemoteActions {
         MAIN.post(new Runnable() {
             @Override
             public void run() {
-                MainActivity act = getActiveActivity(c);
                 HomeRedirectService s = HomeRedirectService.getInstance();
-
-                if (act != null && !act.isFinishing()) {
-                    showInActivityHud(act, level);
-                } else if (s != null) {
-                    showInServiceHud(s, level);
+                if (s != null) {
+                    showOverlayHud(s, level);
                 } else {
-                    // Safe toast fallback
-                    try {
-                        Toast.makeText(c.getApplicationContext(),
-                                c.getString(R.string.hud_brightness, level),
-                                Toast.LENGTH_SHORT).show();
-                    } catch (Throwable ignored) { }
+                    MainActivity act = HomeRedirectService.getLiveActivity();
+                    if (act != null && !act.isFinishing()) {
+                        showActivityHud(act, level);
+                    } else {
+                        try {
+                            Toast.makeText(c.getApplicationContext(),
+                                    c.getString(R.string.hud_brightness, level),
+                                    Toast.LENGTH_SHORT).show();
+                        } catch (Throwable ignored) { }
+                    }
                 }
             }
         });
     }
 
-    private static void showInActivityHud(MainActivity act, int level) {
-        ViewGroup decor = (ViewGroup) act.getWindow().getDecorView();
-        if (hudView == null || hudView.getParent() != decor) {
-            hideHud();
-            hudView = createHudView(act);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-            lp.topMargin = dp(act, 48);
-            decor.addView(hudView, lp);
-        }
-
-        updateHudContent(act, level);
-    }
-
-    private static void showInServiceHud(HomeRedirectService s, int level) {
+    private static void showOverlayHud(HomeRedirectService s, int level) {
         WindowManager wm = (WindowManager) s.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null) return;
+
         if (hudView == null) {
             hudView = createHudView(s);
             WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
@@ -355,12 +327,27 @@ public final class RemoteActions {
             try {
                 wm.addView(hudView, lp);
             } catch (Throwable t) {
-                Log.w(TAG, "add hudView in service failed: " + t);
+                Log.w(TAG, "add overlay hudView failed: " + t);
                 return;
             }
         }
 
         updateHudContent(s, level);
+    }
+
+    private static void showActivityHud(MainActivity act, int level) {
+        ViewGroup decor = (ViewGroup) act.getWindow().getDecorView();
+        if (hudView == null || hudView.getParent() != decor) {
+            hideHud();
+            hudView = createHudView(act);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+            lp.topMargin = dp(act, 48);
+            decor.addView(hudView, lp);
+        }
+
+        updateHudContent(act, level);
     }
 
     private static void updateHudContent(Context c, int level) {
@@ -444,6 +431,10 @@ public final class RemoteActions {
         return root;
     }
 
+    /**
+     * Puts the TV hardware to sleep. No blocking overlays or messages; wake up is clean
+     * and immediate as handled by the TV's native power management.
+     */
     public static void triggerSleep(final Context c) {
         MAIN.post(new Runnable() {
             @Override
@@ -452,7 +443,7 @@ public final class RemoteActions {
                 boolean locked = false;
                 HomeRedirectService s = HomeRedirectService.getInstance();
 
-                // 1. AccessibilityService lock screen (API 28+)
+                // 1. AccessibilityService lock screen (API 28+, Android 9 / Fire OS 7 & 8)
                 if (s != null && Build.VERSION.SDK_INT >= 28) {
                     try {
                         locked = s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN);
@@ -469,7 +460,7 @@ public final class RemoteActions {
                     Log.i(TAG, "AdbBridge sent sleep");
                 }
 
-                // 3. AccessibilityService power dialog (API 21+)
+                // 3. Fallback: Accessibility power dialog (API 21+)
                 if (!locked && s != null) {
                     try {
                         locked = s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG);
@@ -478,83 +469,8 @@ public final class RemoteActions {
                         Log.w(TAG, "GLOBAL_ACTION_POWER_DIALOG failed: " + t);
                     }
                 }
-
-                // 4. In-Activity sleep screen (turns screen completely black)
-                MainActivity act = getActiveActivity(c);
-                if (act != null && !act.isFinishing()) {
-                    showSleepScreen(act);
-                } else {
-                    try {
-                        Toast.makeText(c.getApplicationContext(),
-                                c.getString(R.string.sleep_hint),
-                                Toast.LENGTH_SHORT).show();
-                    } catch (Throwable ignored) { }
-                }
             }
         });
-    }
-
-    private static void showSleepScreen(final MainActivity act) {
-        if (sleepView != null) {
-            wakeFromSleep(act);
-            return;
-        }
-
-        final ViewGroup decor = (ViewGroup) act.getWindow().getDecorView();
-        final FrameLayout sleep = new FrameLayout(act);
-        sleep.setBackgroundColor(Color.BLACK);
-        sleep.setFocusable(true);
-        sleep.setFocusableInTouchMode(true);
-        sleep.setClickable(true);
-
-        TextView hint = new TextView(act);
-        hint.setText(act.getString(R.string.sleep_hint));
-        hint.setTextColor(0x80FFFFFF);
-        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        FrameLayout.LayoutParams hintLp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        hintLp.gravity = Gravity.CENTER;
-        sleep.addView(hint, hintLp);
-
-        sleep.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_UP) {
-                    wakeFromSleep(act);
-                    return true;
-                }
-                return true;
-            }
-        });
-        sleep.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                wakeFromSleep(act);
-            }
-        });
-
-        sleepView = sleep;
-        decor.addView(sleep, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        sleep.requestFocus();
-
-        // Dim brightness to minimum
-        try {
-            WindowManager.LayoutParams lp = act.getWindow().getAttributes();
-            lp.screenBrightness = 0.01f;
-            act.getWindow().setAttributes(lp);
-        } catch (Throwable ignored) { }
-    }
-
-    private static void wakeFromSleep(MainActivity act) {
-        if (sleepView != null) {
-            try {
-                ViewGroup decor = (ViewGroup) act.getWindow().getDecorView();
-                decor.removeView(sleepView);
-            } catch (Throwable ignored) { }
-            sleepView = null;
-        }
-        applyBrightness(act);
     }
 
     private static int dp(Context c, int val) {
