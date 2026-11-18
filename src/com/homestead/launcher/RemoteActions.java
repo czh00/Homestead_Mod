@@ -849,12 +849,10 @@ public final class RemoteActions {
         MAIN.post(new Runnable() {
             @Override
             public void run() {
-                // Automate opening TV Picture Settings (176), moving down 7 times, and clicking OK (23)
-                // to directly activate "螢幕顯示" (displaying resolution, frame rate & Dolby status).
-                // Batch the 7 DPAD_DOWNs and DPAD_CENTER into a single 'input keyevent' invocation.
-                // In AOSP input command, multiple arguments are injected in a single process loop (<10ms),
-                // avoiding 8 separate VM process spawns and reducing macro latency from ~3s to <0.3s!
-                final String cmd = "input keyevent 176 && sleep 0.15 && input keyevent 20 20 20 20 20 20 20 23";
+                // Automate opening TV Picture Settings (176), waiting for overlay window focus (0.28s),
+                // moving down 7 times in batch (20*7), settling focus (0.08s), and clicking OK (23).
+                // Total execution time ~0.5s (down from 3.5s in v1 while ensuring no dropped keys).
+                final String cmd = "input keyevent 176 && sleep 0.28 && input keyevent 20 20 20 20 20 20 20 && sleep 0.08 && input keyevent 23";
 
                 if (AdbBridge.isReady(c) || AdbBridge.canRun(c)) {
                     AdbBridge.run(cmd, null);
