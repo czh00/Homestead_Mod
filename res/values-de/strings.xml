@@ -139,6 +139,16 @@
   <string name="key_act_sleep">Ruhezustand / Standby</string>
   <string name="key_act_picture_settings">TV-Bildeinstellungen</string>
   <string name="key_act_screen_display">Bildschirmanzeige (Info / Dolby)</string>
+  <string name="key_act_info_hud">Live-Medien-Info HUD (Auflösung/FPS/Bitrate)</string>
+  <string name="info_hud_title">Wiedergabe-Info</string>
+  <string name="info_hud_hint">Taste drücken zum Schließen</string>
+  <string name="info_hud_app">📱 Aktive App</string>
+  <string name="info_hud_res">📺 Auflösung</string>
+  <string name="info_hud_fps">⚡ Bildrate</string>
+  <string name="info_hud_bitrate">🚀 Live-Bitrate</string>
+  <string name="info_hud_hdr">🌈 HDR / Farbe</string>
+  <string name="info_hud_video">🎬 Video-Codec</string>
+  <string name="info_hud_audio">🔊 Audioausgabe</string>
   <string name="set_remote_screen_display_help">Aktuelle Bildschirmauflösung, Bildrate und Dolby Vision / Atmos-Status anzeigen.</string>
   <string name="key_act_set_homestead">Homestead-Einstellungen</string>
   <string name="key_act_set_health">TV-Zustand (Health)</string>

@@ -1138,6 +1138,7 @@ public final class SettingsPanel {
         final String[] standardActions = {
                 "",
                 "set_homestead",
+                "info_hud",
                 "picture_settings",
                 "screen_display",
                 "sleep",
@@ -1198,6 +1199,7 @@ public final class SettingsPanel {
 
         // Built-in System Settings Section
         final String[] systemActions = {
+                "info_hud",
                 "picture_settings",
                 "screen_display",
                 "sys_settings",

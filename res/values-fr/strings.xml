@@ -136,6 +136,16 @@
   <string name="key_act_sleep">Mise en veille</string>
   <string name="key_act_picture_settings">Paramètres d\'image du téléviseur</string>
   <string name="key_act_screen_display">Affichage écran (Info / Dolby)</string>
+  <string name="key_act_info_hud">HUD d\'infos média en direct (Résolution/FPS)</string>
+  <string name="info_hud_title">Infos de lecture</string>
+  <string name="info_hud_hint">Appuyez pour fermer</string>
+  <string name="info_hud_app">📱 App active</string>
+  <string name="info_hud_res">📺 Résolution</string>
+  <string name="info_hud_fps">⚡ Fréquence</string>
+  <string name="info_hud_bitrate">🚀 Débit en direct</string>
+  <string name="info_hud_hdr">🌈 HDR / Couleur</string>
+  <string name="info_hud_video">🎬 Codec vidéo</string>
+  <string name="info_hud_audio">🔊 Sortie audio</string>
   <string name="set_remote_screen_display_help">Affiche la résolution de l\'écran, la fréquence d\'images et l\'état Dolby Vision / Atmos.</string>
   <string name="key_act_set_homestead">Paramètres Homestead</string>
   <string name="key_act_set_health">État du téléviseur (TV Health)</string>

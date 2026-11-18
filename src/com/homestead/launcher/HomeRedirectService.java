@@ -137,6 +137,10 @@ public class HomeRedirectService extends AccessibilityService {
         return instance;
     }
 
+    public String getLastForeground() {
+        return lastForeground;
+    }
+
     /** Start HomeKeyWatcher once READ_LOGS is granted; safe to call more than once. */
     public static void startHomeKeyWatch() {
         HomeRedirectService s = instance;
@@ -530,6 +534,7 @@ public class HomeRedirectService extends AccessibilityService {
     public void onDestroy() {
         cancelHide();
         detach();
+        InfoHud.hide();
         try { unregisterReceiver(pkgs); } catch (Throwable t) { }
         try { if (tvInputs != null) tvInputs.unregisterCallback(inputWatch); } catch (Throwable t) { }
         handler.removeCallbacks(pkgReload);

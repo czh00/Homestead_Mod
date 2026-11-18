@@ -139,6 +139,16 @@
   <string name="key_act_sleep">待機 / 休眠</string>
   <string name="key_act_picture_settings">電視原廠畫面設定</string>
   <string name="key_act_screen_display">屏幕显示 (分辨率/杜比)</string>
+  <string name="key_act_info_hud">实时影音信息浮窗 (分辨率/FPS/码率/编码)</string>
+  <string name="info_hud_title">实时影音信息</string>
+  <string name="info_hud_hint">按此键关闭</string>
+  <string name="info_hud_app">📱 当前应用</string>
+  <string name="info_hud_res">📺 显示分辨率</string>
+  <string name="info_hud_fps">⚡ 帧率刷新率</string>
+  <string name="info_hud_bitrate">🚀 实时码率</string>
+  <string name="info_hud_hdr">🌈 画面色彩</string>
+  <string name="info_hud_video">🎬 视频编码</string>
+  <string name="info_hud_audio">🔊 音频输出</string>
   <string name="set_remote_screen_display_help">实时显示当前画面的分辨率、帧率与杜比 (Dolby Vision / Atmos) 点亮状态。</string>
   <string name="key_act_set_homestead">Homestead 設定</string>
   <string name="key_act_set_health">電視狀態檢測 (TV Health)</string>

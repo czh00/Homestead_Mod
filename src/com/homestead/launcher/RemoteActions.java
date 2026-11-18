@@ -222,6 +222,7 @@ public final class RemoteActions {
         if ("brightness_down".equals(action)) return c.getString(R.string.key_act_bright_down);
         if ("picture_settings".equals(action)) return c.getString(R.string.key_act_picture_settings);
         if ("screen_display".equals(action)) return c.getString(R.string.key_act_screen_display);
+        if ("info_hud".equals(action)) return c.getString(R.string.key_act_info_hud);
         if ("set_homestead".equals(action)) return c.getString(R.string.key_act_set_homestead);
         if ("set_health".equals(action)) return c.getString(R.string.key_act_set_health);
         if ("set_debloat".equals(action)) return c.getString(R.string.key_act_set_debloat);
@@ -512,6 +513,10 @@ public final class RemoteActions {
         }
         if ("screen_display".equals(action)) {
             showScreenDisplay(c);
+            return;
+        }
+        if ("info_hud".equals(action)) {
+            InfoHud.toggle(c);
             return;
         }
         if ("set_homestead".equals(action)) {
