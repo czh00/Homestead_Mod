@@ -382,49 +382,37 @@ public final class RemoteActions {
             return false;
         }
 
-        // Case 1: Key has NO long-press action configured -> Instant 0ms execution on ACTION_DOWN!
-        if (longAct.isEmpty()) {
-            if (event.getAction() == KeyEvent.ACTION_UP) {
-                return true;
-            }
-            if (event.getAction() != KeyEvent.ACTION_DOWN) {
-                return false;
-            }
-            // Debounce for channel brightness repeat
-            if (isChannelUp(code) || isChannelDown(code)) {
-                long now = SystemClock.uptimeMillis();
-                if (now - lastAdjustTime < ADJUST_DEBOUNCE_MS) {
-                    return true;
-                }
-                lastAdjustTime = now;
-            }
-            executeAction(c, shortAct);
-            return true;
-        }
-
-        // Case 2: Key HAS a long-press action configured -> Manage hold timer & repeat
+        // Handle ACTION_DOWN:
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             if (event.getRepeatCount() == 0) {
-                // Key pressed down: start long-press timer
+                // Key pressed down: initialize tracking and cancel previous timers
                 MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
                 pendingKeyCode = code;
                 pendingKeyId = keyId;
                 longPressFired = false;
-                MAIN.postDelayed(LONG_PRESS_RUNNABLE, LONG_PRESS_TIMEOUT_MS);
+
+                if (!longAct.isEmpty()) {
+                    // Start long-press timer only if a long-press action is assigned
+                    MAIN.postDelayed(LONG_PRESS_RUNNABLE, LONG_PRESS_TIMEOUT_MS);
+                }
             } else if (code == pendingKeyCode && !longPressFired) {
-                // Hardware key repeat arrives: fire long-press immediately
-                MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
-                longPressFired = true;
-                executeAction(c, longAct);
+                // Key repeat arrives while held: trigger long press if assigned
+                if (!longAct.isEmpty()) {
+                    MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
+                    longPressFired = true;
+                    executeAction(c, longAct);
+                }
             }
+            // All actions trigger on release (ACTION_UP) or after long-press timeout; consume DOWN.
             return true;
         }
 
+        // Handle ACTION_UP (Key Released):
         if (event.getAction() == KeyEvent.ACTION_UP) {
+            MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
             if (code == pendingKeyCode) {
-                MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
                 if (!longPressFired) {
-                    // Released before timeout -> trigger Short Press action!
+                    // Released before long-press threshold: trigger Short Press action!
                     if (!shortAct.isEmpty()) {
                         executeAction(c, shortAct);
                     }
