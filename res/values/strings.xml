@@ -139,13 +139,13 @@
   <string name="key_act_sleep">Sleep / Standby</string>
   <string name="key_act_picture_settings">TV Picture Settings</string>
   <string name="key_act_screen_display">Screen Display (Info / Dolby)</string>
-  <string name="key_act_info_hud">Live Media Info HUD (Res/FPS/Bitrate/Codec)</string>
+  <string name="key_act_info_hud">Live Media HUD (Mode/FPS/Net/Codec)</string>
   <string name="info_hud_title">Playback Info</string>
   <string name="info_hud_hint">Press key to close</string>
   <string name="info_hud_app">📱 App</string>
-  <string name="info_hud_res">📺 Res</string>
+  <string name="info_hud_res">📺 Out</string>
   <string name="info_hud_fps">⚡ FPS</string>
-  <string name="info_hud_bitrate">🚀 Rate</string>
+  <string name="info_hud_bitrate">🚀 Net</string>
   <string name="info_hud_hdr">🌈 Color</string>
   <string name="info_hud_video">🎬 Video</string>
   <string name="info_hud_audio">🔊 Audio</string>

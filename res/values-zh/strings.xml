@@ -139,13 +139,13 @@
   <string name="key_act_sleep">待機 / 休眠</string>
   <string name="key_act_picture_settings">電視原廠畫面設定</string>
   <string name="key_act_screen_display">屏幕显示 (分辨率/杜比)</string>
-  <string name="key_act_info_hud">实时影音信息浮窗 (分辨率/FPS/码率/编码)</string>
+  <string name="key_act_info_hud">实时影音浮窗 (输出模式/帧率/网速/编码)</string>
   <string name="info_hud_title">实时影音信息</string>
   <string name="info_hud_hint">按此键关闭</string>
   <string name="info_hud_app">📱 应用</string>
-  <string name="info_hud_res">📺 解析</string>
+  <string name="info_hud_res">📺 输出</string>
   <string name="info_hud_fps">⚡ 帧率</string>
-  <string name="info_hud_bitrate">🚀 码率</string>
+  <string name="info_hud_bitrate">🚀 网速</string>
   <string name="info_hud_hdr">🌈 色彩</string>
   <string name="info_hud_video">🎬 视频</string>
   <string name="info_hud_audio">🔊 音频</string>

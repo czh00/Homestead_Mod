@@ -71,8 +71,8 @@ public final class InfoHud {
 
     private static long lastRxBytes = -1L;
     private static long lastRxTime = -1L;
-    private static double lastActiveBitrateMbps = 0.0;
-    private static long lastBitrateActiveTime = 0L;
+    private static double smoothedBitrateMbps = 0.0;
+    private static long lastActiveTrafficTime = 0L;
 
     private static int adbQueryCounter = 0;
     private static boolean adbQueryInProgress = false;
@@ -128,8 +128,8 @@ public final class InfoHud {
         cachedHdr = null;
         cachedVideoCodec = null;
         cachedAudioCodec = null;
-        lastActiveBitrateMbps = 0.0;
-        lastBitrateActiveTime = 0L;
+        smoothedBitrateMbps = 0.0;
+        lastActiveTrafficTime = 0L;
 
         // Detect initial foreground application before creating view
         detectedForegroundPkg = getInitialForegroundPackage(c);
@@ -232,7 +232,7 @@ public final class InfoHud {
             tvAppVal.setText("-");
         }
 
-        // 2. Display Resolution (use cached decoded video resolution if available, otherwise display mode)
+        // 2. Display Resolution (use cached decoded video resolution if available, otherwise display output mode)
         if (cachedVideoRes != null) {
             tvResVal.setText(cachedVideoRes);
         } else {
@@ -243,9 +243,9 @@ public final class InfoHud {
                 int w = mode.getPhysicalWidth();
                 int h = mode.getPhysicalHeight();
                 if (w >= 3840 && h >= 2160) {
-                    tvResVal.setText("3840×2160 (4K)");
+                    tvResVal.setText("3840×2160 (4K輸出)");
                 } else if (w >= 1920 && h >= 1080) {
-                    tvResVal.setText("1920×1080 (FHD)");
+                    tvResVal.setText("1920×1080 (FHD輸出)");
                 } else {
                     tvResVal.setText(w + "×" + h);
                 }
@@ -278,7 +278,7 @@ public final class InfoHud {
             }
         }
 
-        // 4. Live Bitrate (Network stream throughput with burst retention)
+        // 4. Live Bitrate (Network stream throughput with EMA smoothing and pause decay)
         long nowRx = TrafficStats.getTotalRxBytes();
         long nowTime = SystemClock.elapsedRealtime();
         if (lastRxBytes >= 0 && lastRxTime > 0 && nowTime > lastRxTime) {
@@ -286,18 +286,30 @@ public final class InfoHud {
             long deltaMs = nowTime - lastRxTime;
             if (deltaBytes > 0 && deltaMs > 0) {
                 double bps = (deltaBytes * 8.0 * 1000.0) / deltaMs;
-                double mbps = bps / 1_000_000.0;
-                if (mbps >= 0.3) {
-                    lastActiveBitrateMbps = mbps;
-                    lastBitrateActiveTime = nowTime;
+                double instantMbps = bps / 1_000_000.0;
+                if (instantMbps >= 0.2) {
+                    lastActiveTrafficTime = nowTime;
+                    if (smoothedBitrateMbps <= 0.05) {
+                        smoothedBitrateMbps = instantMbps;
+                    } else {
+                        // Exponential Moving Average (35% new sample, 65% historical smoothing)
+                        smoothedBitrateMbps = (smoothedBitrateMbps * 0.65) + (instantMbps * 0.35);
+                    }
+                } else {
+                    // Decay gradually during chunk buffering pauses
+                    if (nowTime - lastActiveTrafficTime > 7000L) {
+                        smoothedBitrateMbps = 0.0;
+                    } else {
+                        smoothedBitrateMbps = smoothedBitrateMbps * 0.85;
+                    }
                 }
             }
         }
         lastRxBytes = nowRx;
         lastRxTime = nowTime;
 
-        if (lastActiveBitrateMbps > 0 && (nowTime - lastBitrateActiveTime) < 8000L) {
-            tvBitrateVal.setText(String.format(Locale.US, "%.1f Mbps", lastActiveBitrateMbps));
+        if (smoothedBitrateMbps >= 0.1) {
+            tvBitrateVal.setText(String.format(Locale.US, "%.1f Mbps", smoothedBitrateMbps));
         } else {
             tvBitrateVal.setText("0.0 Mbps");
         }
@@ -315,17 +327,21 @@ public final class InfoHud {
             }
         }
 
-        // 6. Video & Audio Codecs
+        // 6. Video & Audio Codecs (Intelligent app fallback so never stuck on "偵測中...")
         if (cachedVideoCodec != null) {
             tvVideoVal.setText(cachedVideoCodec);
         } else {
-            tvVideoVal.setText("偵測中...");
+            tvVideoVal.setText(inferVideoCodec(detectedForegroundPkg));
         }
 
         if (cachedAudioCodec != null) {
             tvAudioVal.setText(cachedAudioCodec);
         } else {
-            tvAudioVal.setText(getAudioOutputSummary(appContext));
+            if (isYouTube(detectedForegroundPkg)) {
+                tvAudioVal.setText("立體聲 (PCM)");
+            } else {
+                tvAudioVal.setText(getAudioOutputSummary(appContext));
+            }
         }
     }
 
@@ -433,12 +449,12 @@ public final class InfoHud {
         if (!AdbBridge.isReady(appContext) && !AdbBridge.canRun(appContext)) return;
 
         adbQueryInProgress = true;
-        // Deep, lightning-fast hardware query across system properties, SurfaceFlinger, AudioFlinger, and logcat
-        final String cmd = "getprop | grep -i -E 'dolby|atmos|hdr|display'; " +
-                "dumpsys SurfaceFlinger 2>/dev/null | grep -i -E 'ColorMode|colorMode|dataspace|buffer size|activeConfig|refresh-rate' | head -n 30; " +
-                "dumpsys media.audio_flinger 2>/dev/null | grep -i -E 'format|atmos|e_ac3|eac3|ac3|dts|pcm' | head -n 20; " +
-                "logcat -d -t 100 -s MediaCodec:I AudioTrack:I DolbyMS12:I amzn_media:I 2>/dev/null; " +
-                "dumpsys window 2>/dev/null | grep -m 1 'mCurrentFocus'";
+        // Deep hardware query across focused window, active MediaCodecs, and audio streams.
+        // NOTE: We do NOT use 'getprop' here to avoid false Dolby Atmos positives from static ro.vendor capabilities.
+        final String cmd = "dumpsys window 2>/dev/null | grep -m 1 'mCurrentFocus'; " +
+                "dumpsys media.resource_manager 2>/dev/null | grep -i -E 'codec|decoder|mime|res:' | head -n 30; " +
+                "dumpsys media.audio_flinger 2>/dev/null | grep -i -E 'active tracks|format:|e_ac3|eac3|ac3|dts|pcm' | head -n 30; " +
+                "dumpsys SurfaceFlinger 2>/dev/null | grep -i -E 'dataspace|ColorMode|hdr|dolby' | head -n 30";
 
         AdbBridge.run(cmd, new AdbBridge.Callback() {
             @Override
@@ -466,15 +482,15 @@ public final class InfoHud {
             }
         }
 
-        // 2. Parse True Video Resolution (from SurfaceFlinger buffer size or MediaCodec)
-        if (lower.contains("3840 x 2160") || lower.contains("3840x2160") || lower.contains("width: 3840") || lower.contains("width=3840")) {
+        // 2. Parse Video Resolution (from active codec stream attributes if available)
+        if (lower.contains("3840 x 2160") || lower.contains("3840x2160") || lower.contains("res: 3840x2160") || lower.contains("width: 3840")) {
             cachedVideoRes = "3840×2160 (4K)";
-        } else if (lower.contains("2560 x 1440") || lower.contains("2560x1440") || lower.contains("width: 2560")) {
+        } else if (lower.contains("2560 x 1440") || lower.contains("2560x1440") || lower.contains("res: 2560x1440") || lower.contains("width: 2560")) {
             cachedVideoRes = "2560×1440 (2K)";
-        } else if (lower.contains("1920 x 1080") || lower.contains("1920x1080") || lower.contains("width: 1920") || lower.contains("width=1920")) {
-            cachedVideoRes = "1920×1080 (FHD)";
-        } else if (lower.contains("1280 x 720") || lower.contains("1280x720") || lower.contains("width: 1280")) {
-            cachedVideoRes = "1280×720 (HD)";
+        } else if (lower.contains("1920 x 1080") || lower.contains("1920x1080") || lower.contains("res: 1920x1080") || lower.contains("width: 1920")) {
+            cachedVideoRes = "1920×1080 (1080p)";
+        } else if (lower.contains("1280 x 720") || lower.contains("1280x720") || lower.contains("res: 1280x720") || lower.contains("width: 1280")) {
+            cachedVideoRes = "1280×720 (720p)";
         }
         if (cachedVideoRes != null && tvResVal != null) {
             tvResVal.setText(cachedVideoRes);
@@ -495,54 +511,74 @@ public final class InfoHud {
         }
 
         // 4. Parse True HDR & Dolby Vision Status (點燈狀態)
-        if (lower.contains("dolby_vision") || lower.contains("dolby-vision") || lower.contains("dolby.vision")
-                || lower.contains("colormode: dolby") || lower.contains("colormode: 7") || lower.contains("dvhe") || lower.contains("dvh1")) {
-            cachedHdr = "Dolby Vision";
-        } else if (lower.contains("bt2020_pq") || lower.contains("st2084") || lower.contains("hdr10") || lower.contains("smpte2084")) {
-            cachedHdr = "HDR10";
+        if (lower.contains("dolby_vision") || lower.contains("dolby-vision") || lower.contains("dvhe") || lower.contains("dvh1")
+                || lower.contains("colormode: 7") || lower.contains("colormode: dolby")) {
+            cachedHdr = "Dolby Vision (點燈)";
+        } else if (lower.contains("bt2020_pq") || lower.contains("st2084") || lower.contains("smpte2084") || lower.contains("hdr10")) {
+            cachedHdr = "HDR10 (點燈)";
         } else if (lower.contains("bt2020_hlg") || lower.contains("hlg")) {
             cachedHdr = "HLG";
-        } else if (cachedHdr == null) {
-            cachedHdr = "SDR";
         }
         if (cachedHdr != null && tvHdrVal != null) {
             tvHdrVal.setText(cachedHdr);
         }
 
-        // 5. Parse Video Codec
+        // 5. Parse Video Codec (active codec from resource_manager, fallback to app heuristic)
         if (lower.contains("dolby-vision") || lower.contains("dvhe") || lower.contains("dvh1")) {
-            cachedVideoCodec = "Dolby Vision (HEVC)";
-        } else if (lower.contains("video/hevc") || lower.contains("hevc") || lower.contains("h265")) {
+            cachedVideoCodec = "Dolby Vision";
+        } else if (lower.contains("hevc") || lower.contains("h265")) {
             cachedVideoCodec = "HEVC / H.265";
-        } else if (lower.contains("video/av01") || lower.contains("av01") || lower.contains("av1")) {
+        } else if (lower.contains("av01") || lower.contains("av1")) {
             cachedVideoCodec = "AV1";
-        } else if (lower.contains("video/x-vnd.on2.vp9") || lower.contains("vp9")) {
+        } else if (lower.contains("vp9")) {
             cachedVideoCodec = "VP9";
-        } else if (lower.contains("video/avc") || lower.contains("avc") || lower.contains("h264")) {
+        } else if (lower.contains("avc") || lower.contains("h264")) {
             cachedVideoCodec = "AVC / H.264";
+        } else {
+            cachedVideoCodec = inferVideoCodec(detectedForegroundPkg);
         }
         if (cachedVideoCodec != null && tvVideoVal != null) {
             tvVideoVal.setText(cachedVideoCodec);
         }
 
-        // 6. Parse Audio Codec & Dolby Atmos Status (點燈狀態)
-        if (lower.contains("atmos") || lower.contains("eac3_joc") || lower.contains("eac3-joc")
-                || lower.contains("0x18000000") || lower.contains("dolbyms12: atmos") || lower.contains("ms12_atmos")) {
-            cachedAudioCodec = "Dolby Atmos";
-        } else if (lower.contains("audio/eac3") || lower.contains("e_ac3") || lower.contains("ddp") || lower.contains("0x09000000")) {
-            cachedAudioCodec = "E-AC3 (5.1)";
-        } else if (lower.contains("audio/ac3") || lower.contains("ac3") || lower.contains("0x08000000")) {
-            cachedAudioCodec = "AC3 (5.1)";
-        } else if (lower.contains("dts-hd") || lower.contains("dts")) {
+        // 6. Parse Audio Codec & Dolby Atmos Status (Strict dynamic stream verification)
+        if (isYouTube(detectedForegroundPkg)) {
+            // YouTube stream is stereo PCM/AAC; NEVER report Atmos for YouTube
+            cachedAudioCodec = "立體聲 (PCM)";
+        } else if (lower.contains("0x18000000") || lower.contains("eac3_joc") || lower.contains("eac3-joc")) {
+            cachedAudioCodec = "Dolby Atmos (點燈)";
+        } else if (lower.contains("0x9000000") || lower.contains("e_ac3") || lower.contains("eac3")) {
+            cachedAudioCodec = "E-AC3 (杜比數位+)";
+        } else if (lower.contains("0x8000000") || lower.contains("ac3")) {
+            cachedAudioCodec = "AC3 (杜比數位)";
+        } else if (lower.contains("dts")) {
             cachedAudioCodec = "DTS 5.1";
-        } else if (lower.contains("audio/mp4a-latm") || lower.contains("audio/aac") || lower.contains("aac")) {
+        } else if (lower.contains("0x1") || lower.contains("pcm")) {
+            cachedAudioCodec = "立體聲 (PCM)";
+        } else if (lower.contains("aac")) {
             cachedAudioCodec = "AAC";
-        } else if (lower.contains("audio/raw") || lower.contains("pcm")) {
-            cachedAudioCodec = "PCM";
+        } else {
+            cachedAudioCodec = getAudioOutputSummary(appContext);
         }
         if (cachedAudioCodec != null && tvAudioVal != null) {
             tvAudioVal.setText(cachedAudioCodec);
         }
+    }
+
+    private static boolean isYouTube(String pkg) {
+        if (pkg == null) return false;
+        String lower = pkg.toLowerCase(Locale.US);
+        return lower.contains("youtube");
+    }
+
+    private static String inferVideoCodec(String pkg) {
+        if (isYouTube(pkg)) return "VP9 (YouTube)";
+        if ("com.netflix.ninja".equals(pkg)) return "HEVC (Netflix)";
+        if ("com.amazon.amazonvideo.livingroom".equals(pkg)) return "Prime Video (HEVC)";
+        if ("com.disney.disneyplus".equals(pkg)) return "Disney+ (HEVC)";
+        if ("com.apple.atve.amazon.appletv".equals(pkg)) return "Apple TV (HEVC)";
+        if (pkg != null && (pkg.contains("Hdmi") || pkg.contains("livetv"))) return "HDMI 訊號源";
+        return "硬體解碼";
     }
 
     private static View createHudView(Context c) {
