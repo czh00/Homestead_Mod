@@ -136,6 +136,8 @@
   <string name="key_act_none">None</string>
   <string name="key_act_sleep">Sleep / Standby</string>
   <string name="key_act_picture_settings">TV Picture Settings</string>
+  <string name="key_act_screen_display">Screen Display (Info / Dolby)</string>
+  <string name="set_remote_screen_display_help">Display current screen resolution, frame rate, and Dolby Vision / Atmos status.</string>
   <string name="key_act_set_homestead">Homestead Settings</string>
   <string name="key_act_set_health">TV Health</string>
   <string name="key_act_set_debloat">Debloat</string>

@@ -136,6 +136,8 @@
   <string name="key_act_none">無動作</string>
   <string name="key_act_sleep">待機 / 休眠</string>
   <string name="key_act_picture_settings">電視原廠畫面設定</string>
+  <string name="key_act_screen_display">螢幕顯示 (解析度/杜比)</string>
+  <string name="set_remote_screen_display_help">即時顯示目前畫面的解析度、影格率與杜比 (Dolby Vision / Atmos) 點燈狀態。</string>
   <string name="key_act_set_homestead">Homestead 設定</string>
   <string name="key_act_set_health">電視狀態檢測 (TV Health)</string>
   <string name="key_act_set_debloat">系統精簡設定 (Debloat)</string>

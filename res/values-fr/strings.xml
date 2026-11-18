@@ -133,6 +133,8 @@
   <string name="key_act_none">Aucune</string>
   <string name="key_act_sleep">Mise en veille</string>
   <string name="key_act_picture_settings">Paramètres d\'image du téléviseur</string>
+  <string name="key_act_screen_display">Affichage écran (Info / Dolby)</string>
+  <string name="set_remote_screen_display_help">Affiche la résolution de l\'écran, la fréquence d\'images et l\'état Dolby Vision / Atmos.</string>
   <string name="key_act_set_homestead">Paramètres Homestead</string>
   <string name="key_act_set_health">État du téléviseur (TV Health)</string>
   <string name="key_act_set_debloat">Nettoyage système (Debloat)</string>

@@ -891,18 +891,6 @@ public final class SettingsPanel {
             }
         });
 
-        p.addRow(c.getString(R.string.key_act_set_homestead), "", new Runnable() {
-            public void run() {
-                host.closePanel();
-            }
-        }).opens().setHelp(c.getString(R.string.set_remote_homestead_settings_help));
-
-        p.addRow(c.getString(R.string.key_act_picture_settings), "", new Runnable() {
-            public void run() {
-                RemoteActions.openPictureSettings(c);
-            }
-        }).opens().setHelp(c.getString(R.string.set_remote_picture_settings_help));
-
         // 2. Color buttons
         p.addHeader(c.getString(R.string.set_remote_sec_colors));
         final String[] colorKeys = { "red", "green", "yellow", "blue" };
@@ -1136,6 +1124,7 @@ public final class SettingsPanel {
                 "",
                 "set_homestead",
                 "picture_settings",
+                "screen_display",
                 "sleep",
                 "inputs",
                 "cycle_inputs",
@@ -1194,6 +1183,8 @@ public final class SettingsPanel {
 
         // Built-in System Settings Section
         final String[] systemActions = {
+                "picture_settings",
+                "screen_display",
                 "sys_settings",
                 "sys_display",
                 "sys_network",

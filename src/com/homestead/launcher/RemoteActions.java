@@ -219,6 +219,7 @@ public final class RemoteActions {
         if ("brightness_up".equals(action)) return c.getString(R.string.key_act_bright_up);
         if ("brightness_down".equals(action)) return c.getString(R.string.key_act_bright_down);
         if ("picture_settings".equals(action)) return c.getString(R.string.key_act_picture_settings);
+        if ("screen_display".equals(action)) return c.getString(R.string.key_act_screen_display);
         if ("set_homestead".equals(action)) return c.getString(R.string.key_act_set_homestead);
         if ("set_health".equals(action)) return c.getString(R.string.key_act_set_health);
         if ("set_debloat".equals(action)) return c.getString(R.string.key_act_set_debloat);
@@ -491,6 +492,10 @@ public final class RemoteActions {
         }
         if ("picture_settings".equals(action)) {
             openPictureSettings(c);
+            return;
+        }
+        if ("screen_display".equals(action)) {
+            showScreenDisplay(c);
             return;
         }
         if ("set_homestead".equals(action)) {
@@ -787,8 +792,8 @@ public final class RemoteActions {
     }
 
     public static void openPictureSettings(Context c) {
-        // 1. If ADB is ready, KEYCODE_SETTINGS (176) opens the TV's native quick settings overlay
-        if (AdbBridge.isReady(c)) {
+        // 1. If ADB is ready or tunnel can run, KEYCODE_SETTINGS (176) opens the TV's native quick settings overlay
+        if (AdbBridge.isReady(c) || AdbBridge.canRun(c)) {
             AdbBridge.run("input keyevent 176", null);
             return;
         }
@@ -818,6 +823,28 @@ public final class RemoteActions {
                 s.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS);
             } catch (Throwable ignored) { }
         }
+    }
+
+    public static void showScreenDisplay(final Context c) {
+        MAIN.post(new Runnable() {
+            @Override
+            public void run() {
+                // 1. Send KEYCODE_INFO (165) via ADB if ready or tunnel can run
+                if (AdbBridge.isReady(c) || AdbBridge.canRun(c)) {
+                    AdbBridge.run("input keyevent 165", null);
+                    return;
+                }
+
+                // 2. Fallback: try local shell execution
+                try {
+                    Runtime.getRuntime().exec("input keyevent 165");
+                    return;
+                } catch (Throwable ignored) { }
+
+                // 3. Fallback: try AdbBridge directly
+                AdbBridge.run("input keyevent 165", null);
+            }
+        });
     }
 
     public static void openHomesteadPanel(Context c, String panelType) {
