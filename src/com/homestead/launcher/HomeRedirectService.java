@@ -463,6 +463,9 @@ public class HomeRedirectService extends AccessibilityService {
         bindWatcher();
         scheduleBootMaintenance();
         RemoteActions.updateKeyFilter(this);
+        if (RemoteActions.hasAnyCustomKey(this) && AdbBridge.isReady(this)) {
+            AdbBridge.connect();
+        }
         if (Prefs.screenBrightness(this) < 100) {
             RemoteActions.applyBrightness(this);
         } else {

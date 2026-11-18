@@ -413,6 +413,9 @@ public final class AdbBridge {
 
     private static void armIdleDisconnect() {
         if (worker == null) return;
+        long timeout = (app != null && RemoteActions.hasAnyCustomKey(app))
+                ? 600000L // Keep connection warm for 10 minutes when remote keys are configured
+                : IDLE_DISCONNECT_MS;
         worker.postDelayed(new Runnable() {
             public void run() {
                 if (conn == null) return;
@@ -421,7 +424,7 @@ public final class AdbBridge {
                 stopTunnelIfActive();
                 if (state == CONNECTED) publish(IDLE, "idle");
             }
-        }, IDLE_DISCONNECT_MS);
+        }, timeout);
     }
 
     /**
