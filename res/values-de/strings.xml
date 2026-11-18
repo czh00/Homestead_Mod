@@ -56,6 +56,11 @@
   <string name="set_firetv_help">Amazons Einstellungsseiten, die von hier aus geöffnet werden, etwa Netzwerk, Bluetooth und Anwendungen, sein vollständiges Einstellungsmenü und Einstellungsverknüpfungen für den Startbildschirm.</string>
   <string name="opt_date_long">Wochentag und Monat</string>
   <string name="opt_date_short">Zahlen</string>
+  <string name="opt_resources">Systemressourcen</string>
+  <string name="opt_resources_help">Live-Arbeitsspeicher (RAM) und Speicherplatz neben dem Datum anzeigen.</string>
+  <string name="opt_res_ram_storage">RAM + Speicher</string>
+  <string name="opt_res_ram_only">Nur RAM</string>
+  <string name="res_storage_avail">Speicher %.1fG frei</string>
   <string name="opt_wide">Nicht-TV-Apps als breite Kacheln</string>
   <string name="opt_wide_help">Wie Fire TVs eigener Startbildschirm: das Symbol jeder App auf einer bannerbreiten Kachel, in einem Raster wie die TV-Apps.</string>
   <string name="opt_fire">Fire-TV-Systemsymbole</string>

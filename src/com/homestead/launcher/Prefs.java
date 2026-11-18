@@ -65,6 +65,7 @@ public final class Prefs {
     private static final String K_TV_FIRST = "livetv_first";
     private static final String K_GREETING = "greeting";
     private static final String K_DATE = "date_format";
+    private static final String K_RESOURCES = "resource_info";
     private static final String K_NONTV_WIDE = "nontv_wide";
     private static final String K_FIRE_ICONS = "fire_os_icons";
     private static final String K_LANGUAGE = "language";
@@ -89,6 +90,10 @@ public final class Prefs {
     public static final int DATE_LONG = 1;
     /** The TV's short numeric date. */
     public static final int DATE_SHORT = 2;
+
+    public static final int RES_OFF = 0;
+    public static final int RES_RAM_STORAGE = 1;
+    public static final int RES_RAM_ONLY = 2;
 
     private Prefs() { }
 
@@ -334,6 +339,10 @@ public final class Prefs {
     /** The date at the top left, one of DATE_*. Off by default. */
     public static int dateFormat(Context c) { return sp(c).getInt(K_DATE, DATE_OFF); }
     public static void setDateFormat(Context c, int v) { sp(c).edit().putInt(K_DATE, v).apply(); }
+
+    /** Resource info (RAM / Storage) beside the date. Defaults to RES_RAM_STORAGE. */
+    public static int resourceInfo(Context c) { return sp(c).getInt(K_RESOURCES, RES_RAM_STORAGE); }
+    public static void setResourceInfo(Context c, int v) { sp(c).edit().putInt(K_RESOURCES, v).apply(); }
 
     /** Non-TV apps as banner-sized tiles built from their icon, as Fire TV's own home does. */
     public static boolean nonTvWide(Context c) { return sp(c).getBoolean(K_NONTV_WIDE, false); }

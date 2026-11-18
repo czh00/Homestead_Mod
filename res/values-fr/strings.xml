@@ -53,6 +53,11 @@
   <string name="set_firetv_help">Les écrans de paramètres d\'Amazon qui s\'ouvrent d\'ici, comme le réseau, le Bluetooth et les applications, son menu complet de paramètres, et des raccourcis vers les paramètres sur l\'écran d\'accueil.</string>
   <string name="opt_date_long">Jour et mois</string>
   <string name="opt_date_short">Chiffres</string>
+  <string name="opt_resources">Ressources système</string>
+  <string name="opt_resources_help">Afficher l\'utilisation de la mémoire (RAM) et du stockage à côté de la date.</string>
+  <string name="opt_res_ram_storage">RAM + Stockage</string>
+  <string name="opt_res_ram_only">RAM uniquement</string>
+  <string name="res_storage_avail">Stockage %.1fG libre</string>
   <string name="opt_wide">Applis non-TV en tuiles larges</string>
   <string name="opt_wide_help">Comme l\'accueil de Fire TV : l\'icône de chaque appli sur une tuile de la taille d\'une bannière, dans une grille comme les applis TV.</string>
   <string name="opt_fire">Icônes système Fire TV</string>

@@ -323,6 +323,18 @@ public final class SettingsPanel {
         });
         date.setHelp(c.getString(R.string.opt_date_help));
 
+        final Panel.Row resources = p.addRow(c.getString(R.string.opt_resources), resourcesLabel(c), null);
+        resources.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                int n = Prefs.resourceInfo(c) + 1;
+                if (n > Prefs.RES_RAM_ONLY) n = Prefs.RES_OFF;
+                Prefs.setResourceInfo(c, n);
+                resources.setValue(resourcesLabel(c));
+                host.rebuildGrid();
+            }
+        });
+        resources.setHelp(c.getString(R.string.opt_resources_help));
+
         final Panel.Row wide = p.addRow(c.getString(R.string.opt_wide), onOff(Prefs.nonTvWide(c)), null).asSwitch();
         wide.cell.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -1446,6 +1458,14 @@ public final class SettingsPanel {
         switch (Prefs.dateFormat(c)) {
             case Prefs.DATE_LONG: return c.getString(R.string.opt_date_long);
             case Prefs.DATE_SHORT: return c.getString(R.string.opt_date_short);
+            default: return c.getString(R.string.set_off);
+        }
+    }
+
+    private static String resourcesLabel(Context c) {
+        switch (Prefs.resourceInfo(c)) {
+            case Prefs.RES_RAM_STORAGE: return c.getString(R.string.opt_res_ram_storage);
+            case Prefs.RES_RAM_ONLY: return c.getString(R.string.opt_res_ram_only);
             default: return c.getString(R.string.set_off);
         }
     }

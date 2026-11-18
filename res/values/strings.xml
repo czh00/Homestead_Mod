@@ -56,6 +56,11 @@
   <string name="set_firetv_help">Amazon\'s settings screens that open from here, such as network, Bluetooth and applications, its full settings menu, and settings shortcuts for the home screen.</string>
   <string name="opt_date_long">Weekday and month</string>
   <string name="opt_date_short">Numbers</string>
+  <string name="opt_resources">Resource info</string>
+  <string name="opt_resources_help">Display live memory (RAM) and storage usage beside the date.</string>
+  <string name="opt_res_ram_storage">RAM + Storage</string>
+  <string name="opt_res_ram_only">RAM only</string>
+  <string name="res_storage_avail">Storage %.1fG free</string>
   <string name="opt_wide">Non-TV apps as wide tiles</string>
   <string name="opt_wide_help">Like Fire TV\'s own home: each app\'s icon on a banner-sized tile, in a grid like the TV apps.</string>
   <string name="opt_fire">Fire TV system icons</string>

@@ -12,11 +12,14 @@
  */
 package com.homestead.launcher;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
 import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -107,9 +110,12 @@ public class HomeGrid implements SettingsPanel.Host {
     private final LinearLayout head;
     private final TextView greet;
     private final TextView date;
+    private final TextView headResText;
     private final LinearLayout topBar;
     /** The date beside a large clock, drawn only with the top bar. */
     private final TextView dateText;
+    private final TextView barResText;
+    private View barResRule;
     private boolean barShown;
     private View barSpacer, barRule;
 
@@ -327,12 +333,16 @@ public class HomeGrid implements SettingsPanel.Host {
         dateText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         dateText.setLetterSpacing(0.1f);
         dateText.setSingleLine(true);
+        barResText = new TextView(c);
+        barResText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        barResText.setLetterSpacing(0.05f);
+        barResText.setSingleLine(true);
         topBar = new LinearLayout(c) {
-            // The date is the first thing to go when the clock and the pills do not fit side by
-            // side (a 12-hour clock is wider): better no date than a pill pushed off the screen.
+            // The resource info and date are the first things to go when the clock and the pills do not fit side by
+            // side (a 12-hour clock is wider): better drop them than a pill pushed off the screen.
             @Override protected void onMeasure(int w, int h) {
                 super.onMeasure(w, h);
-                if (dateText.getVisibility() != View.VISIBLE) return;
+                if (dateText.getVisibility() != View.VISIBLE && barResText.getVisibility() != View.VISIBLE) return;
                 int avail = MeasureSpec.getSize(w) - getPaddingLeft() - getPaddingRight();
                 int need = 0;
                 for (int i = 0; i < getChildCount(); i++) {
@@ -341,7 +351,19 @@ public class HomeGrid implements SettingsPanel.Host {
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) v.getLayoutParams();
                     need += v.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
                 }
-                if (need > avail) {
+                if (need > avail && barResText.getVisibility() == View.VISIBLE) {
+                    barResText.setVisibility(View.GONE);
+                    if (barResRule != null) barResRule.setVisibility(View.GONE);
+                    super.onMeasure(w, h);
+                    need = 0;
+                    for (int i = 0; i < getChildCount(); i++) {
+                        View v = getChildAt(i);
+                        if (v == barSpacer || v.getVisibility() == View.GONE) continue;
+                        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) v.getLayoutParams();
+                        need += v.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+                    }
+                }
+                if (need > avail && dateText.getVisibility() == View.VISIBLE) {
                     dateText.setVisibility(View.GONE);
                     if (barRule != null) barRule.setVisibility(View.GONE);
                     super.onMeasure(w, h);
@@ -368,10 +390,22 @@ public class HomeGrid implements SettingsPanel.Host {
         greet.setTextSize(TypedValue.COMPLEX_UNIT_SP, 26);
         greet.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         head.addView(greet);
+
+        LinearLayout dateRow = new LinearLayout(c);
+        dateRow.setOrientation(LinearLayout.HORIZONTAL);
+        dateRow.setGravity(Gravity.CENTER_VERTICAL);
         date = new TextView(c);
         date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         date.setAlpha(0.8f);
-        head.addView(date);
+        dateRow.addView(date);
+
+        headResText = new TextView(c);
+        headResText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        headResText.setAlpha(0.75f);
+        headResText.setSingleLine(true);
+        dateRow.addView(headResText);
+
+        head.addView(dateRow);
         FrameLayout.LayoutParams hlp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.TOP | Gravity.LEFT);
@@ -444,6 +478,8 @@ public class HomeGrid implements SettingsPanel.Host {
         paintText(greet);
         paintText(date);
         paintText(dateText);
+        paintText(headResText);
+        paintText(barResText);
         if (topTitle != null && topTitle == barSpacer) paintText(topTitle);
         for (int i = 0; i < column.getChildCount(); i++) {
             View v = column.getChildAt(i);
@@ -485,6 +521,10 @@ public class HomeGrid implements SettingsPanel.Host {
             clock.setText(new SimpleDateFormat(fmt, Locale.getDefault()).format(now));
         }
         dateText.setText(dateString(now, true).toUpperCase(Locale.getDefault()));
+        int resMode = Prefs.resourceInfo(ctx);
+        if (resMode != Prefs.RES_OFF) {
+            barResText.setText(resourceString(ctx, resMode));
+        }
     }
 
     /**
@@ -502,6 +542,42 @@ public class HomeGrid implements SettingsPanel.Host {
         return "";
     }
 
+    public static String resourceString(Context c, int mode) {
+        if (mode == Prefs.RES_OFF) return "";
+        try {
+            ActivityManager am = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
+            ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+            if (am != null) am.getMemoryInfo(mi);
+            long totalMem = mi.totalMem;
+            long availMem = mi.availMem;
+            long usedMem = Math.max(0, totalMem - availMem);
+            int memPct = totalMem > 0 ? (int) Math.round(100.0 * usedMem / totalMem) : 0;
+            float usedMb = usedMem / (1024f * 1024f);
+            float totalMb = totalMem / (1024f * 1024f);
+
+            String ramPart;
+            if (totalMb >= 1000) {
+                ramPart = String.format(Locale.getDefault(), "RAM %.1f/%.1fG (%d%%)", usedMb / 1024f, totalMb / 1024f, memPct);
+            } else {
+                ramPart = String.format(Locale.getDefault(), "RAM %d/%dM (%d%%)", Math.round(usedMb), Math.round(totalMb), memPct);
+            }
+
+            if (mode == Prefs.RES_RAM_ONLY) {
+                return ramPart;
+            }
+
+            StatFs fs = new StatFs(Environment.getDataDirectory().getPath());
+            long b = fs.getBlockSizeLong();
+            long availDisk = fs.getAvailableBlocksLong() * b;
+            float availDiskGb = availDisk / (1024f * 1024f * 1024f);
+
+            String diskPart = String.format(Locale.getDefault(), c.getString(R.string.res_storage_avail), availDiskGb);
+            return ramPart + "   " + diskPart;
+        } catch (Throwable t) {
+            return "";
+        }
+    }
+
     /** Greeting and date, each its own setting; the grid moves down while either shows. */
     private void updateHead() {
         // The bar carries the clock and the date at the left, so the greeting steps aside.
@@ -509,6 +585,7 @@ public class HomeGrid implements SettingsPanel.Host {
         Date now = new Date();
         boolean g = Prefs.greeting(ctx);
         int df = Prefs.dateFormat(ctx);
+        int resMode = Prefs.resourceInfo(ctx);
         if (g) {
             int h = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
             greet.setText(h >= 5 && h < 12 ? R.string.home_greet_morning
@@ -517,13 +594,26 @@ public class HomeGrid implements SettingsPanel.Host {
         greet.setVisibility(g ? View.VISIBLE : View.GONE);
         if (df != Prefs.DATE_OFF) date.setText(dateString(now, false));
         date.setVisibility(df != Prefs.DATE_OFF ? View.VISIBLE : View.GONE);
-        boolean show = g || df != Prefs.DATE_OFF;
+
+        if (resMode != Prefs.RES_OFF) {
+            String resStr = resourceString(ctx, resMode);
+            if (df != Prefs.DATE_OFF) {
+                headResText.setText("   |   " + resStr);
+            } else {
+                headResText.setText(resStr);
+            }
+            headResText.setVisibility(View.VISIBLE);
+        } else {
+            headResText.setVisibility(View.GONE);
+        }
+
+        boolean show = g || df != Prefs.DATE_OFF || resMode != Prefs.RES_OFF;
         head.setVisibility(show ? View.VISIBLE : View.GONE);
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) scroll.getLayoutParams();
         // With the header up, the scroll area starts below it and clips, so the grid never
         // draws over it while scrolling; the padding moves the other way, so tiles at rest
         // stay where they were and a focused tile in the first row still has room to grow.
-        int top = show ? dp(g && df != Prefs.DATE_OFF ? 76 : 54) : 0;
+        int top = show ? dp(g && (df != Prefs.DATE_OFF || resMode != Prefs.RES_OFF) ? 76 : 54) : 0;
         if (lp.topMargin != top) {
             lp.topMargin = top;
             scroll.setLayoutParams(lp);
@@ -1461,6 +1551,8 @@ public class HomeGrid implements SettingsPanel.Host {
             clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
             clock.setTypeface(Typeface.DEFAULT);
             dateText.setVisibility(View.GONE);
+            barResText.setVisibility(View.GONE);
+            if (barResRule != null) barResRule.setVisibility(View.GONE);
             TextView chip = new TextView(ctx);
             chip.setTextColor(Color.WHITE);
             chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
@@ -1503,6 +1595,22 @@ public class HomeGrid implements SettingsPanel.Host {
             topBar.addView(dateText);
         } else {
             dateText.setVisibility(View.GONE);
+        }
+
+        int resMode = Prefs.resourceInfo(ctx);
+        if (showClock && resMode != Prefs.RES_OFF) {
+            View rRule = new View(ctx);
+            barResRule = rRule;
+            rRule.setBackgroundColor(0x55FFFFFF);
+            LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(dp(1), dp(22));
+            rlp.leftMargin = dp(14);
+            rlp.rightMargin = dp(14);
+            topBar.addView(rRule, rlp);
+            barResText.setVisibility(View.VISIBLE);
+            barResText.setAlpha(0.8f);
+            topBar.addView(barResText);
+        } else {
+            barResText.setVisibility(View.GONE);
         }
         topBar.addView(spacer, slp);
 

@@ -56,6 +56,11 @@
   <string name="set_firetv_help">從此處開啟的 Amazon 設定畫面，例如網路、藍牙與應用程式、完整的設定選單，以及首頁螢幕的設定捷徑。</string>
   <string name="opt_date_long">星期與月份</string>
   <string name="opt_date_short">數字</string>
+  <string name="opt_resources">系統資源資訊</string>
+  <string name="opt_resources_help">在日期右方即時顯示記憶體（RAM）使用率與儲存空間可用容量。</string>
+  <string name="opt_res_ram_storage">RAM + 儲存空間</string>
+  <string name="opt_res_ram_only">僅 RAM</string>
+  <string name="res_storage_avail">儲存 %.1fG 可用</string>
   <string name="opt_wide">非電視應用程式顯示為寬圖塊</string>
   <string name="opt_wide_help">如同 Fire TV 原始首頁：每個應用程式圖示均位於橫幅大小的圖塊上，呈現如電視應用程式般的格線排列。</string>
   <string name="opt_fire">Fire TV 系統圖示</string>
