@@ -95,6 +95,16 @@
   <string name="set_remote_sec_system">Raccourcis système</string>
   <string name="set_remote_sec_apps">Lancer une application</string>
   <string name="set_remote_picker_help">Choisissez une action ou une application à lancer lorsque vous appuyez sur cette touche.</string>
+  <string name="set_remote_key_sub">Personnaliser la pression courte et longue</string>
+  <string name="set_remote_key_short">Pression courte (Clic)</string>
+  <string name="set_remote_key_short_title">Pression courte</string>
+  <string name="set_remote_key_short_help">Action déclenchée lors d\'une pression courte sur cette touche.</string>
+  <string name="set_remote_key_long">Pression longue (0,5 s)</string>
+  <string name="set_remote_key_long_title">Pression longue</string>
+  <string name="set_remote_key_long_help">Action déclenchée en maintenant cette touche. Si non définie, la pression courte se déclenche sans délai.</string>
+  <string name="set_remote_key_clear">Effacer toutes les actions pour cette touche</string>
+  <string name="set_remote_key_both_format">Court : %1$s / Long : %2$s</string>
+  <string name="set_remote_key_long_prefix">Long : %1$s</string>
   <string name="set_remote_ch_brightness">Touches de chaîne pour la luminosité</string>
   <string name="set_remote_ch_brightness_help">Utilisez les touches Chaîne +/- pour régler la luminosité de l\'écran.</string>
   <string name="set_remote_red_sleep">Touche rouge pour veille (sommeil)</string>

@@ -98,6 +98,16 @@
   <string name="set_remote_sec_system">Systemeinstellungen</string>
   <string name="set_remote_sec_apps">App starten</string>
   <string name="set_remote_picker_help">Wählen Sie eine Aktion oder eine App, die beim Drücken dieser Taste gestartet werden soll.</string>
+  <string name="set_remote_key_sub">Kurzen und langen Tastendruck anpassen</string>
+  <string name="set_remote_key_short">Kurzer Tastendruck (Klick)</string>
+  <string name="set_remote_key_short_title">Kurzer Druck</string>
+  <string name="set_remote_key_short_help">Aktion, die beim kurzen Drücken dieser Taste ausgeführt wird.</string>
+  <string name="set_remote_key_long">Langer Tastendruck (0,5 s)</string>
+  <string name="set_remote_key_long_title">Langer Druck</string>
+  <string name="set_remote_key_long_help">Aktion, die beim Halten dieser Taste ausgeführt wird. Ohne Belegung löst kurzer Druck verzögerungsfrei aus.</string>
+  <string name="set_remote_key_clear">Alle Aktionen für diese Taste löschen</string>
+  <string name="set_remote_key_both_format">Kurz: %1$s / Lang: %2$s</string>
+  <string name="set_remote_key_long_prefix">Lang: %1$s</string>
   <string name="set_remote_ch_brightness">Kanaltasten regeln Helligkeit</string>
   <string name="set_remote_ch_brightness_help">Verwenden Sie Kanal +/- Tasten, um die Bildschirmhelligkeit anzupassen.</string>
   <string name="set_remote_red_sleep">Rote Taste als Ein/Aus (Ruhezustand)</string>

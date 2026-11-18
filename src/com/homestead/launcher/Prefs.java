@@ -182,7 +182,7 @@ public final class Prefs {
 
     // ---------------------------------------------------------------- layout
 
-    public static int sort(Context c) { return sp(c).getInt(K_SORT, SORT_LAST_USED); }
+    public static int sort(Context c) { return sp(c).getInt(K_SORT, SORT_ALPHA); }
     public static void setSort(Context c, int v) { sp(c).edit().putInt(K_SORT, v).apply(); }
 
     public static int columns(Context c) {
@@ -307,6 +307,15 @@ public final class Prefs {
     }
     public static void setKeyAction(Context c, String keyId, String action) {
         sp(c).edit().putString("remote_action_" + keyId, action == null ? "" : action).apply();
+    }
+
+    public static String keyLongAction(Context c, String keyId) {
+        String def = "";
+        if ("vid_info".equals(keyId)) def = "info_hud";
+        return sp(c).getString("remote_long_action_" + keyId, def);
+    }
+    public static void setKeyLongAction(Context c, String keyId, String action) {
+        sp(c).edit().putString("remote_long_action_" + keyId, action == null ? "" : action).apply();
     }
 
     public static boolean redKeySleep(Context c) {

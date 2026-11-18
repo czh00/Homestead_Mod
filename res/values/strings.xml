@@ -98,6 +98,16 @@
   <string name="set_remote_sec_system">Built-in system settings</string>
   <string name="set_remote_sec_apps">Launch application</string>
   <string name="set_remote_picker_help">Choose an action or application to launch when this button is pressed.</string>
+  <string name="set_remote_key_sub">Customize short press and long press actions</string>
+  <string name="set_remote_key_short">Short Press (Click)</string>
+  <string name="set_remote_key_short_title">Short Press</string>
+  <string name="set_remote_key_short_help">Action or app triggered immediately when pressing this key.</string>
+  <string name="set_remote_key_long">Long Press (Hold 0.5s)</string>
+  <string name="set_remote_key_long_title">Long Press</string>
+  <string name="set_remote_key_long_help">Action or app triggered when holding this key for ~0.5s. When unassigned, short press triggers with zero latency.</string>
+  <string name="set_remote_key_clear">Clear All Actions for This Key</string>
+  <string name="set_remote_key_both_format">Short: %1$s / Long: %2$s</string>
+  <string name="set_remote_key_long_prefix">Long: %1$s</string>
   <string name="set_remote_ch_brightness">Channel buttons control brightness</string>
   <string name="set_remote_ch_brightness_help">Use Channel +/- buttons on the remote to adjust screen brightness.</string>
   <string name="set_remote_red_sleep">Red button for power (sleep)</string>

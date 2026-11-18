@@ -98,6 +98,16 @@
   <string name="set_remote_sec_system">內建系統設定快捷</string>
   <string name="set_remote_sec_apps">開啟應用程式</string>
   <string name="set_remote_picker_help">選擇按下此鍵時要執行的動作或應用程式。</string>
+  <string name="set_remote_key_sub">自訂此鍵的短按與長按動作</string>
+  <string name="set_remote_key_short">短按動作 (點擊)</string>
+  <string name="set_remote_key_short_title">短按動作</string>
+  <string name="set_remote_key_short_help">短按此鍵時立即執行的動作或開啟的 App。</string>
+  <string name="set_remote_key_long">長按動作 (長按 0.5 秒)</string>
+  <string name="set_remote_key_long_title">長按動作</string>
+  <string name="set_remote_key_long_help">長按此鍵約 0.5 秒時執行的動作或開啟的 App。若未設定長按動作，短按將以零延遲立即觸發。</string>
+  <string name="set_remote_key_clear">清除此鍵所有動作</string>
+  <string name="set_remote_key_both_format">短: %1$s / 長: %2$s</string>
+  <string name="set_remote_key_long_prefix">長按: %1$s</string>
   <string name="set_remote_ch_brightness">頻道鍵控制亮度</string>
   <string name="set_remote_ch_brightness_help">按遙控器頻道上/下鍵（CH+ / CH-）可調高或調低螢幕亮度。</string>
   <string name="set_remote_red_sleep">紅鍵電源開關（休眠）</string>

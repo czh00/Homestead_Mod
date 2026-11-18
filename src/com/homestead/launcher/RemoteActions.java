@@ -140,12 +140,25 @@ public final class RemoteActions {
         return c.getString(R.string.key_test_unmapped);
     }
 
+    public static String getKeyFullActionDescription(Context c, String keyId) {
+        if (keyId == null) return "-";
+        String sAct = Prefs.keyAction(c, keyId);
+        String lAct = Prefs.keyLongAction(c, keyId);
+        if (!sAct.isEmpty() && !lAct.isEmpty()) {
+            return c.getString(R.string.set_remote_key_both_format, actionLabel(c, sAct), actionLabel(c, lAct));
+        } else if (!sAct.isEmpty()) {
+            return actionLabel(c, sAct);
+        } else if (!lAct.isEmpty()) {
+            return c.getString(R.string.set_remote_key_long_prefix, actionLabel(c, lAct));
+        }
+        return c.getString(R.string.key_act_none);
+    }
+
     public static String getKeyActionDescription(Context c) {
         if (lastKeyCode == 0) return "-";
         String keyId = findKeyId(lastKeyCode);
         if (keyId != null) {
-            String act = Prefs.keyAction(c, keyId);
-            return act.isEmpty() ? c.getString(R.string.key_act_none) : actionLabel(c, act);
+            return getKeyFullActionDescription(c, keyId);
         }
         return c.getString(R.string.key_act_none);
     }
@@ -157,9 +170,8 @@ public final class RemoteActions {
         String keyId = findKeyId(lastKeyCode);
         if (keyId != null) {
             String title = keyTitle(c, keyId);
-            String act = Prefs.keyAction(c, keyId);
-            String actLabel = act.isEmpty() ? c.getString(R.string.key_act_none) : actionLabel(c, act);
-            return lastKeyName + " (" + lastKeyCode + ")  ✔ " + title + "  [" + actLabel + "]";
+            String actDesc = getKeyFullActionDescription(c, keyId);
+            return lastKeyName + " (" + lastKeyCode + ")  ✔ " + title + "  [" + actDesc + "]";
         }
         return lastKeyName + " (" + lastKeyCode + ")  ✔ " + c.getString(R.string.set_remote_key_captured);
     }
@@ -312,25 +324,36 @@ public final class RemoteActions {
         return code == 334;
     }
 
+    private static Context activeContext = null;
+    private static final int LONG_PRESS_TIMEOUT_MS = 450;
+    private static int pendingKeyCode = 0;
+    private static String pendingKeyId = null;
+    private static boolean longPressFired = false;
+
+    private static final Runnable LONG_PRESS_RUNNABLE = new Runnable() {
+        @Override
+        public void run() {
+            if (pendingKeyId != null) {
+                longPressFired = true;
+                Context ctx = activeContext;
+                if (ctx != null) {
+                    String longAct = Prefs.keyLongAction(ctx, pendingKeyId);
+                    if (!longAct.isEmpty()) {
+                        executeAction(ctx, longAct);
+                    }
+                }
+            }
+        }
+    };
+
     public static boolean isHandledKey(Context c, int keyCode) {
-        if (isVidInfoKey(keyCode) && !Prefs.keyAction(c, "vid_info").isEmpty()) return true;
-        if (isChannelUp(keyCode) && !Prefs.keyAction(c, "ch_up").isEmpty()) return true;
-        if (isChannelDown(keyCode) && !Prefs.keyAction(c, "ch_down").isEmpty()) return true;
-        if (isRedKey(keyCode) && !Prefs.keyAction(c, "red").isEmpty()) return true;
-        if (isGreenKey(keyCode) && !Prefs.keyAction(c, "green").isEmpty()) return true;
-        if (isYellowKey(keyCode) && !Prefs.keyAction(c, "yellow").isEmpty()) return true;
-        if (isBlueKey(keyCode) && !Prefs.keyAction(c, "blue").isEmpty()) return true;
-
-        int appIdx = getAppKeyIndex(keyCode);
-        if (appIdx >= 1 && !Prefs.keyAction(c, "app_" + appIdx).isEmpty()) return true;
-
-        int num = getNumberFromKey(keyCode);
-        if (num >= 0 && !Prefs.keyAction(c, "num_" + num).isEmpty()) return true;
-
-        return false;
+        String keyId = findKeyId(keyCode);
+        if (keyId == null) return false;
+        return !Prefs.keyAction(c, keyId).isEmpty() || !Prefs.keyLongAction(c, keyId).isEmpty();
     }
 
     public static boolean handleKeyEvent(final Context c, KeyEvent event) {
+        activeContext = c.getApplicationContext();
         int code = event.getKeyCode();
 
         // In test mode, allow UI navigation keys (D-pad & Back) to pass through to the UI
@@ -347,99 +370,70 @@ public final class RemoteActions {
             return true;
         }
 
-        if (!isHandledKey(c, code)) {
+        final String keyId = findKeyId(code);
+        if (keyId == null) {
             return false;
         }
 
-        // Consume UP events so they never leak to native Live TV or other apps
-        if (event.getAction() == KeyEvent.ACTION_UP) {
+        final String shortAct = Prefs.keyAction(c, keyId);
+        final String longAct = Prefs.keyLongAction(c, keyId);
+
+        if (shortAct.isEmpty() && longAct.isEmpty()) {
+            return false;
+        }
+
+        // Case 1: Key has NO long-press action configured -> Instant 0ms execution on ACTION_DOWN!
+        if (longAct.isEmpty()) {
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+                return true;
+            }
+            if (event.getAction() != KeyEvent.ACTION_DOWN) {
+                return false;
+            }
+            // Debounce for channel brightness repeat
+            if (isChannelUp(code) || isChannelDown(code)) {
+                long now = SystemClock.uptimeMillis();
+                if (now - lastAdjustTime < ADJUST_DEBOUNCE_MS) {
+                    return true;
+                }
+                lastAdjustTime = now;
+            }
+            executeAction(c, shortAct);
             return true;
         }
-        if (event.getAction() != KeyEvent.ACTION_DOWN) {
-            return false;
+
+        // Case 2: Key HAS a long-press action configured -> Manage hold timer & repeat
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (event.getRepeatCount() == 0) {
+                // Key pressed down: start long-press timer
+                MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
+                pendingKeyCode = code;
+                pendingKeyId = keyId;
+                longPressFired = false;
+                MAIN.postDelayed(LONG_PRESS_RUNNABLE, LONG_PRESS_TIMEOUT_MS);
+            } else if (code == pendingKeyCode && !longPressFired) {
+                // Hardware key repeat arrives: fire long-press immediately
+                MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
+                longPressFired = true;
+                executeAction(c, longAct);
+            }
+            return true;
         }
 
-        // 1. Channel buttons
-        if (isChannelUp(code)) {
-            String act = Prefs.keyAction(c, "ch_up");
-            if (!act.isEmpty()) {
-                long now = SystemClock.uptimeMillis();
-                if (now - lastAdjustTime >= ADJUST_DEBOUNCE_MS) {
-                    lastAdjustTime = now;
-                    executeAction(c, act);
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            if (code == pendingKeyCode) {
+                MAIN.removeCallbacks(LONG_PRESS_RUNNABLE);
+                if (!longPressFired) {
+                    // Released before timeout -> trigger Short Press action!
+                    if (!shortAct.isEmpty()) {
+                        executeAction(c, shortAct);
+                    }
                 }
-                return true;
+                pendingKeyCode = 0;
+                pendingKeyId = null;
+                longPressFired = false;
             }
-        }
-        if (isChannelDown(code)) {
-            String act = Prefs.keyAction(c, "ch_down");
-            if (!act.isEmpty()) {
-                long now = SystemClock.uptimeMillis();
-                if (now - lastAdjustTime >= ADJUST_DEBOUNCE_MS) {
-                    lastAdjustTime = now;
-                    executeAction(c, act);
-                }
-                return true;
-            }
-        }
-
-        // 2. Color buttons
-        if (isRedKey(code)) {
-            String act = Prefs.keyAction(c, "red");
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
-        }
-        if (isGreenKey(code)) {
-            String act = Prefs.keyAction(c, "green");
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
-        }
-        if (isYellowKey(code)) {
-            String act = Prefs.keyAction(c, "yellow");
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
-        }
-        if (isBlueKey(code)) {
-            String act = Prefs.keyAction(c, "blue");
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
-        }
-
-        // 3. Dedicated app buttons (APP 1 ~ 4 / Keycodes 287 ~ 290)
-        int appIdx = getAppKeyIndex(code);
-        if (appIdx >= 1) {
-            String act = Prefs.keyAction(c, "app_" + appIdx);
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
-        }
-
-        // 4. Number buttons (0 ~ 9)
-        int num = getNumberFromKey(code);
-        if (num >= 0) {
-            String act = Prefs.keyAction(c, "num_" + num);
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
-        }
-
-        // 5. Video Info key (VID_SRC_INFO / 334)
-        if (isVidInfoKey(code)) {
-            String act = Prefs.keyAction(c, "vid_info");
-            if (!act.isEmpty()) {
-                executeAction(c, act);
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -680,18 +674,15 @@ public final class RemoteActions {
     }
 
     public static boolean hasAnyCustomKey(Context c) {
-        if (!Prefs.keyAction(c, "vid_info").isEmpty()) return true;
-        if (!Prefs.keyAction(c, "ch_up").isEmpty()) return true;
-        if (!Prefs.keyAction(c, "ch_down").isEmpty()) return true;
-        if (!Prefs.keyAction(c, "red").isEmpty()) return true;
-        if (!Prefs.keyAction(c, "green").isEmpty()) return true;
-        if (!Prefs.keyAction(c, "yellow").isEmpty()) return true;
-        if (!Prefs.keyAction(c, "blue").isEmpty()) return true;
-        for (int i = 1; i <= 4; i++) {
-            if (!Prefs.keyAction(c, "app_" + i).isEmpty()) return true;
-        }
-        for (int i = 0; i <= 9; i++) {
-            if (!Prefs.keyAction(c, "num_" + i).isEmpty()) return true;
+        String[] keys = {
+                "vid_info", "ch_up", "ch_down", "red", "green", "yellow", "blue",
+                "app_1", "app_2", "app_3", "app_4",
+                "num_0", "num_1", "num_2", "num_3", "num_4", "num_5", "num_6", "num_7", "num_8", "num_9"
+        };
+        for (String k : keys) {
+            if (!Prefs.keyAction(c, k).isEmpty() || !Prefs.keyLongAction(c, k).isEmpty()) {
+                return true;
+            }
         }
         return false;
     }
@@ -854,11 +845,9 @@ public final class RemoteActions {
         MAIN.post(new Runnable() {
             @Override
             public void run() {
-                // Automate opening TV Picture Settings (176), waiting for overlay window focus (0.30s),
-                // moving down 7 times in 2 safe batches (4 + 3) to prevent UI animation drops,
-                // settling focus on "螢幕顯示" (0.08s), and clicking OK (23).
-                // Total execution time ~0.8s (blazing fast and 100% reliable without dropping any keys).
-                final String cmd = "input keyevent 176 && sleep 0.30 && input keyevent 20 20 20 20 && sleep 0.05 && input keyevent 20 20 20 && sleep 0.08 && input keyevent 23";
+                // Automate opening TV Picture Settings (176), waiting for overlay window focus (0.28s),
+                // moving down 7 times directly (20*7), settling focus (0.08s), and clicking OK (23).
+                final String cmd = "input keyevent 176 && sleep 0.28 && input keyevent 20 20 20 20 20 20 20 && sleep 0.08 && input keyevent 23";
 
                 if (AdbBridge.isReady(c) || AdbBridge.canRun(c)) {
                     AdbBridge.run(cmd, null);
