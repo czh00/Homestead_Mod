@@ -846,9 +846,20 @@ public final class RemoteActions {
         MAIN.post(new Runnable() {
             @Override
             public void run() {
-                // Avoid keyevent 165: on Amazon Fire OS, 165 triggers Alexa Voice Search!
-                // Open the TV Picture Settings overlay (176) where "螢幕顯示" is located.
-                openPictureSettings(c);
+                // Automate opening TV Picture Settings (176), moving down 7 times, and clicking OK (23)
+                // to directly activate "螢幕顯示" (displaying resolution, frame rate & Dolby status)
+                final String cmd = "input keyevent 176 && sleep 0.25 && " +
+                        "input keyevent 20 && input keyevent 20 && input keyevent 20 && " +
+                        "input keyevent 20 && input keyevent 20 && input keyevent 20 && " +
+                        "input keyevent 20 && sleep 0.05 && input keyevent 23";
+
+                if (AdbBridge.isReady(c) || AdbBridge.canRun(c)) {
+                    AdbBridge.run(cmd, null);
+                    return;
+                }
+
+                // Fallback: try AdbBridge run directly (which will auto-connect)
+                AdbBridge.run(cmd, null);
             }
         });
     }
