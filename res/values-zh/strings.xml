@@ -91,6 +91,7 @@
   <string name="set_remote_sec_channel">頻道鍵</string>
   <string name="set_remote_sec_colors">四色鍵</string>
   <string name="set_remote_sec_app_keys">影視快捷鍵 (APP 1-4)</string>
+  <string name="set_remote_sec_special_keys">專用功能鍵</string>
   <string name="set_remote_sec_numbers">數字鍵 (0-9)</string>
   <string name="set_remote_sec_standard">標準功能</string>
   <string name="set_remote_sec_homestead">Homestead 設定項目</string>
@@ -132,6 +133,7 @@
   <string name="key_app_2">快捷鍵 2 (APP 2 / Prime Video 等)</string>
   <string name="key_app_3">快捷鍵 3 (APP 3 / Disney+ 等)</string>
   <string name="key_app_4">快捷鍵 4 (APP 4 / YouTube 等)</string>
+  <string name="key_vid_info">螢幕資訊鍵 (VID_SRC_INFO / 334)</string>
   <string name="key_num_title">數字鍵 %1$s</string>
   <string name="key_act_none">無動作</string>
   <string name="key_act_sleep">待機 / 休眠</string>

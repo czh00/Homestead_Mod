@@ -117,6 +117,7 @@ public final class RemoteActions {
     }
 
     public static String findKeyId(int keyCode) {
+        if (isVidInfoKey(keyCode)) return "vid_info";
         if (isChannelUp(keyCode)) return "ch_up";
         if (isChannelDown(keyCode)) return "ch_down";
         if (isRedKey(keyCode)) return "red";
@@ -181,6 +182,7 @@ public final class RemoteActions {
         if ("app_2".equals(keyId)) return c.getString(R.string.key_app_2);
         if ("app_3".equals(keyId)) return c.getString(R.string.key_app_3);
         if ("app_4".equals(keyId)) return c.getString(R.string.key_app_4);
+        if ("vid_info".equals(keyId)) return c.getString(R.string.key_vid_info);
         if ("red".equals(keyId)) return c.getString(R.string.key_color_red);
         if ("green".equals(keyId)) return c.getString(R.string.key_color_green);
         if ("yellow".equals(keyId)) return c.getString(R.string.key_color_yellow);
@@ -305,7 +307,12 @@ public final class RemoteActions {
         return -1;
     }
 
+    public static boolean isVidInfoKey(int code) {
+        return code == 334;
+    }
+
     public static boolean isHandledKey(Context c, int keyCode) {
+        if (isVidInfoKey(keyCode) && !Prefs.keyAction(c, "vid_info").isEmpty()) return true;
         if (isChannelUp(keyCode) && !Prefs.keyAction(c, "ch_up").isEmpty()) return true;
         if (isChannelDown(keyCode) && !Prefs.keyAction(c, "ch_down").isEmpty()) return true;
         if (isRedKey(keyCode) && !Prefs.keyAction(c, "red").isEmpty()) return true;
@@ -419,6 +426,15 @@ public final class RemoteActions {
         int num = getNumberFromKey(code);
         if (num >= 0) {
             String act = Prefs.keyAction(c, "num_" + num);
+            if (!act.isEmpty()) {
+                executeAction(c, act);
+                return true;
+            }
+        }
+
+        // 5. Video Info key (VID_SRC_INFO / 334)
+        if (isVidInfoKey(code)) {
+            String act = Prefs.keyAction(c, "vid_info");
             if (!act.isEmpty()) {
                 executeAction(c, act);
                 return true;
@@ -659,6 +675,7 @@ public final class RemoteActions {
     }
 
     public static boolean hasAnyCustomKey(Context c) {
+        if (!Prefs.keyAction(c, "vid_info").isEmpty()) return true;
         if (!Prefs.keyAction(c, "ch_up").isEmpty()) return true;
         if (!Prefs.keyAction(c, "ch_down").isEmpty()) return true;
         if (!Prefs.keyAction(c, "red").isEmpty()) return true;

@@ -302,6 +302,7 @@ public final class Prefs {
         if ("ch_up".equals(keyId)) def = "brightness_up";
         else if ("ch_down".equals(keyId)) def = "brightness_down";
         else if ("red".equals(keyId)) def = "sleep";
+        else if ("vid_info".equals(keyId)) def = "screen_display";
         return sp(c).getString("remote_action_" + keyId, def);
     }
     public static void setKeyAction(Context c, String keyId, String action) {

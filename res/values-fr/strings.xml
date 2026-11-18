@@ -88,6 +88,7 @@
   <string name="set_remote_sec_channel">Touches de chaînes</string>
   <string name="set_remote_sec_colors">Touches de couleur</string>
   <string name="set_remote_sec_app_keys">Touches d\'applications (APP 1-4)</string>
+  <string name="set_remote_sec_special_keys">Touches spéciales</string>
   <string name="set_remote_sec_numbers">Touches numériques (0-9)</string>
   <string name="set_remote_sec_standard">Actions standard</string>
   <string name="set_remote_sec_homestead">Paramètres Homestead</string>
@@ -129,6 +130,7 @@
   <string name="key_app_2">Touche App 2 (APP 2)</string>
   <string name="key_app_3">Touche App 3 (APP 3)</string>
   <string name="key_app_4">Touche App 4 (APP 4)</string>
+  <string name="key_vid_info">Touche Info Écran (VID_SRC_INFO / 334)</string>
   <string name="key_num_title">Touche %1$s</string>
   <string name="key_act_none">Aucune</string>
   <string name="key_act_sleep">Mise en veille</string>

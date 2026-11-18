@@ -91,6 +91,7 @@
   <string name="set_remote_sec_channel">Kanaltasten</string>
   <string name="set_remote_sec_colors">Farbtasten</string>
   <string name="set_remote_sec_app_keys">Streaming-App-Tasten (APP 1-4)</string>
+  <string name="set_remote_sec_special_keys">Sondertasten</string>
   <string name="set_remote_sec_numbers">Zifferntasten (0-9)</string>
   <string name="set_remote_sec_standard">Standardaktionen</string>
   <string name="set_remote_sec_homestead">Homestead-Einstellungen</string>
@@ -132,6 +133,7 @@
   <string name="key_app_2">App-Taste 2 (APP 2)</string>
   <string name="key_app_3">App-Taste 3 (APP 3)</string>
   <string name="key_app_4">App-Taste 4 (APP 4)</string>
+  <string name="key_vid_info">Bildschirm-Infotaste (VID_SRC_INFO / 334)</string>
   <string name="key_num_title">Taste %1$s</string>
   <string name="key_act_none">Keine</string>
   <string name="key_act_sleep">Ruhezustand / Standby</string>

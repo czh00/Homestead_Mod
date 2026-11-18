@@ -943,7 +943,22 @@ public final class SettingsPanel {
             });
         }
 
-        // 4. Number buttons (0 ~ 9)
+        // 4. Special keys (VID_SRC_INFO / 334)
+        p.addHeader(c.getString(R.string.set_remote_sec_special_keys));
+        final Panel.Row vidInfoRow = p.addRow(c.getString(R.string.key_vid_info),
+                RemoteActions.actionLabel(c, Prefs.keyAction(c, "vid_info")), null).opens();
+        vidInfoRow.setValueColor(0xFF8FA3B8);
+        vidInfoRow.cell.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                host.showPanel(buildActionPicker(c, host, "vid_info", new Runnable() {
+                    public void run() {
+                        vidInfoRow.setValue(RemoteActions.actionLabel(c, Prefs.keyAction(c, "vid_info")));
+                    }
+                }));
+            }
+        });
+
+        // 5. Number buttons (0 ~ 9)
         p.addHeader(c.getString(R.string.set_remote_sec_numbers));
         for (int i = 0; i <= 9; i++) {
             final int num = i;

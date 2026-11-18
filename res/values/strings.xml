@@ -91,6 +91,7 @@
   <string name="set_remote_sec_channel">Channel buttons</string>
   <string name="set_remote_sec_colors">Color buttons</string>
   <string name="set_remote_sec_app_keys">Streaming app buttons (APP 1-4)</string>
+  <string name="set_remote_sec_special_keys">Special function keys</string>
   <string name="set_remote_sec_numbers">Number buttons (0-9)</string>
   <string name="set_remote_sec_standard">Standard actions</string>
   <string name="set_remote_sec_homestead">Homestead settings</string>
@@ -132,6 +133,7 @@
   <string name="key_app_2">App button 2 (APP 2)</string>
   <string name="key_app_3">App button 3 (APP 3)</string>
   <string name="key_app_4">App button 4 (APP 4)</string>
+  <string name="key_vid_info">Screen Info key (VID_SRC_INFO / 334)</string>
   <string name="key_num_title">Number %1$s</string>
   <string name="key_act_none">None</string>
   <string name="key_act_sleep">Sleep / Standby</string>
