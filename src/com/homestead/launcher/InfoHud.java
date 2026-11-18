@@ -532,15 +532,14 @@ public final class InfoHud {
         LinearLayout root = new LinearLayout(c);
         root.setOrientation(LinearLayout.VERTICAL);
 
-        // Ultra-compact padding: 10dp horizontal, 8dp vertical
         int padH = dp(c, 10);
-        int padV = dp(c, 8);
+        int padV = dp(c, 7);
         root.setPadding(padH, padV, padH, padV);
 
         // Semi-transparent deep midnight slate card (~84% opacity)
         GradientDrawable card = new GradientDrawable();
         card.setColor(Color.argb(215, 12, 16, 24));
-        card.setCornerRadius(dp(c, 12));
+        card.setCornerRadius(dp(c, 10));
         card.setStroke(dp(c, 1), Color.argb(55, 255, 255, 255));
         if (Build.VERSION.SDK_INT >= 16) {
             root.setBackground(card);
@@ -549,11 +548,12 @@ public final class InfoHud {
         }
 
         if (Build.VERSION.SDK_INT >= 21) {
-            root.setElevation(dp(c, 8));
+            root.setElevation(dp(c, 6));
         }
 
-        // Compact width: 240dp (down from 370dp)
-        root.setLayoutParams(new ViewGroup.LayoutParams(dp(c, 240), ViewGroup.LayoutParams.WRAP_CONTENT));
+        // Automatic content-hugging width (WRAP_CONTENT)
+        root.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         // 1. Header Row
         LinearLayout header = new LinearLayout(c);
@@ -563,23 +563,19 @@ public final class InfoHud {
         TextView dot = new TextView(c);
         dot.setText("● ");
         dot.setTextColor(0xFF10B981); // Emerald green live dot
-        dot.setTextSize(11);
+        dot.setTextSize(10);
         header.addView(dot);
 
         TextView title = new TextView(c);
         title.setText(c.getString(R.string.info_hud_title));
         title.setTextColor(0xFFFFFFFF);
-        title.setTextSize(11);
+        title.setTextSize(10);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         header.addView(title);
 
-        View spacer = new View(c);
-        LinearLayout.LayoutParams spLp = new LinearLayout.LayoutParams(0, 1, 1f);
-        header.addView(spacer, spLp);
-
         TextView closeHint = new TextView(c);
-        closeHint.setText(c.getString(R.string.info_hud_hint));
-        closeHint.setTextColor(0xFF94A3B8);
+        closeHint.setText(" (" + c.getString(R.string.info_hud_hint) + ")");
+        closeHint.setTextColor(0xFF8FA3B8);
         closeHint.setTextSize(9);
         header.addView(closeHint);
 
@@ -590,8 +586,8 @@ public final class InfoHud {
         div.setBackgroundColor(0xFF2D3748);
         LinearLayout.LayoutParams divLp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(c, 1));
-        divLp.topMargin = dp(c, 4);
-        divLp.bottomMargin = dp(c, 4);
+        divLp.topMargin = dp(c, 3);
+        divLp.bottomMargin = dp(c, 3);
         root.addView(div, divLp);
 
         // 2. Data Rows
@@ -611,29 +607,32 @@ public final class InfoHud {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams rLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rLp.bottomMargin = dp(c, 2.5f);
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rLp.bottomMargin = dp(c, 2f);
         row.setLayoutParams(rLp);
 
         TextView lbl = new TextView(c);
-        lbl.setText(label);
+        lbl.setText(label + ":");
         lbl.setTextColor(0xFF94A3B8);
         lbl.setTextSize(10);
         LinearLayout.LayoutParams lLp = new LinearLayout.LayoutParams(
-                dp(c, 56), ViewGroup.LayoutParams.WRAP_CONTENT);
+                dp(c, 44), ViewGroup.LayoutParams.WRAP_CONTENT);
         row.addView(lbl, lLp);
 
         TextView val = new TextView(c);
         val.setText("-");
         val.setTextColor(valueColor);
-        val.setTextSize(11);
+        val.setTextSize(10);
         val.setTypeface(Typeface.DEFAULT_BOLD);
         val.setSingleLine(true);
         val.setEllipsize(TextUtils.TruncateAt.END);
-        val.setGravity(Gravity.END);
+        val.setGravity(Gravity.START);
         LinearLayout.LayoutParams vLp = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        row.addView(val, vLp);
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        vLp.leftMargin = dp(c, 3);
+        val.setLayoutParams(vLp);
+        val.setMaxWidth(dp(c, 150));
+        row.addView(val);
 
         parent.addView(row);
         return val;
