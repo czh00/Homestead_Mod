@@ -829,20 +829,9 @@ public final class RemoteActions {
         MAIN.post(new Runnable() {
             @Override
             public void run() {
-                // 1. Send KEYCODE_INFO (165) via ADB if ready or tunnel can run
-                if (AdbBridge.isReady(c) || AdbBridge.canRun(c)) {
-                    AdbBridge.run("input keyevent 165", null);
-                    return;
-                }
-
-                // 2. Fallback: try local shell execution
-                try {
-                    Runtime.getRuntime().exec("input keyevent 165");
-                    return;
-                } catch (Throwable ignored) { }
-
-                // 3. Fallback: try AdbBridge directly
-                AdbBridge.run("input keyevent 165", null);
+                // Avoid keyevent 165: on Amazon Fire OS, 165 triggers Alexa Voice Search!
+                // Open the TV Picture Settings overlay (176) where "螢幕顯示" is located.
+                openPictureSettings(c);
             }
         });
     }
