@@ -99,7 +99,7 @@
 
 ## 安裝方式
 
-從 [最新版本發布頁面 (Releases)](https://github.com/Sarg338/Homestead/releases/latest) 下載 `homestead.apk` 並進行側載：
+從 [最新版本發布頁面 (Releases)](https://github.com/czh00/Homestead_Mod/releases/latest) 下載 `homestead.apk` 並進行側載：
 - 可使用電腦執行 `adb install homestead.apk`。
 - 或在電視上下載「Downloader」應用程式直接下載安裝。
 
@@ -224,7 +224,7 @@ Fire OS 嚴禁任何第三方應用程式註冊為系統預設主頁。Homestead
 
 ## 編譯與打包
 
-若您僅需使用 Homestead，直接從 [Releases](https://github.com/Sarg338/Homestead/releases/latest) 下載預先簽章的 `homestead.apk` 即可。
+若您僅需使用 Homestead，直接從 [Releases](https://github.com/czh00/Homestead_Mod/releases/latest) 下載預先簽章的 `homestead.apk` 即可。
 
 本專案**完全不使用 Gradle**，零外部第三方函式庫依賴，整個專案在 10 秒內即可編譯完成：
 

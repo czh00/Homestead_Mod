@@ -23,7 +23,7 @@ The app has exactly three network behaviours, and no others:
 
 - **Update check.** At most once a day, when the home screen opens or comes back, and
   whenever you press *Check for updates* in Settings, one unauthenticated HTTPS GET to
-  `https://api.github.com/repos/Sarg338/Homestead/releases/latest`. It carries no token, no
+  `https://api.github.com/repos/czh00/Homestead_Mod/releases/latest`. It carries no token, no
   device identifier and nothing about your TV beyond what any HTTPS request carries. The
   APK itself is downloaded only when you choose *Install now*, into the app's private storage;
   the download stops if it grows past the size the release declared, and the file is refused

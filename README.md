@@ -127,7 +127,7 @@ installed).
 
 ## Install
 
-Download `homestead.apk` from the [latest release](https://github.com/Sarg338/Homestead/releases/latest)
+Download `homestead.apk` from the [latest release](https://github.com/czh00/Homestead_Mod/releases/latest)
 and sideload it: `adb install homestead.apk` from a computer, or the Downloader app on the
 TV. When its home screen comes up, the app checks that release page (at most once a day,
 and never in [Simple mode](#setting-it-up-for-someone-else)) and shows a new version once,
@@ -333,7 +333,7 @@ says exactly what is read.
 ## Building
 
 Only needed if you want to build the app from source; to use Homestead, install the signed
-`homestead.apk` from the [releases](https://github.com/Sarg338/Homestead/releases/latest).
+`homestead.apk` from the [releases](https://github.com/czh00/Homestead_Mod/releases/latest).
 No Gradle, no dependencies, under ten seconds:
 
 ```sh
