@@ -1,4 +1,6 @@
-# Homestead
+# Homestead_Mod
+
+A heavily enhanced fork of [Homestead](https://github.com/Sarg338/Homestead) (v2.5.0) customized for Fire TV and Panasonic Smart TVs, featuring custom remote macro automation, short/long-press key remapping, real-time media diagnostics HUD, and Traditional Chinese localization.
 
 A replacement home screen for Fire TV: no advertising rows, no auto-playing trailers, no
 sponsored placements. Your inputs and your apps, and nothing else.
@@ -9,6 +11,37 @@ launcher as the system home activity and will not let anything else take it.
 <img src="screenshots/before_after.png" alt="Before: Amazon's home screen with a sponsored banner, rows of promoted shows and the apps in one strip. After: Homestead with HDMI inputs up front, all apps in one grid, and an Amazon Home tile.">
 
 Both pictures are from the same TV, a few minutes apart.
+
+---
+
+## 🌟 What's New in Homestead_Mod (Modifications & Enhancements)
+
+- **Panasonic TV Screen Display Hardware Macro (`screen_display`)**:
+  - Remaps the Screen Info key (`VID_SRC_INFO / 334`) to an automated ADB hardware macro (`input keyevent 176 && sleep 0.28 && input keyevent 20 20 20 20 20 20 20 && sleep 0.08 && input keyevent 23` - 7 direct downs).
+  - One-click trigger for Panasonic TV screen display information (Resolution, Refresh Rate, Dolby Vision / Atmos status) without cumbersome manual navigation through picture settings.
+- **Live Media Diagnostics HUD (`info_hud`)**:
+  - Independent overlay showing real-time playback diagnostics across any streaming app (YouTube, Prime Video, Netflix, etc.) or HDMI input.
+  - 📱 **Active App**: Current foreground package name.
+  - 📺 **Display Out**: Native output resolution and refresh rate (Hz).
+  - ⚡ **FPS**: Real-time display refresh/render rate.
+  - 🚀 **Network**: EMA-smoothed real-time network download throughput.
+  - 🌈 **Color / HDR**: Accurate detection of SDR, HDR10, HDR10+, Dolby Vision, or HLG.
+  - 🎬 **Video Codec**: Hardware decoder codec heuristics (AVC, HEVC, VP9, AV1, VVC).
+  - 🔊 **Audio**: Dynamic active audio stream detection (PCM, Dolby Digital, DD+, Atmos, DTS).
+- **Per-Key Short & Long Press (Hold 0.45s) Configuration**:
+  - Full customization for Channel Up/Down (CH+/CH-), 4 Color Keys (Red, Green, Yellow, Blue), Dedicated Streaming App Keys (APP 1-4), Number Keys (0-9), and Info keys.
+  - Each key can independently execute distinct short-press and long-press (hold ~0.45s) actions or launch chosen applications.
+- **Release-Trigger Mechanism (`ACTION_UP`) with Anti-Bounce**:
+  - Short-press actions trigger strictly upon key release (`ACTION_UP`). If long-press timeout is met, short press is suppressed, completely eliminating accidental double-actions.
+- **Alphabetical & Locale-Aware Natural App Sorting**:
+  - Integrated `java.text.Collator.getInstance(Locale.getDefault())` with `SORT_ALPHA` default, sorting installed apps cleanly according to native language conventions (A-Z, Chinese stroke/Bopomofo natural sorting).
+- **Dedicated Remote Settings UI & Diagnostic Mode**:
+  - **Key Diagnostics & Test**: Intercepts keys safely, verifies capture status, identifies firmware-locked buttons, and provides immediate "Test run this action" triggers.
+  - **Brightness Control**: Dual-mode brightness adjustments (system brightness vs screen overlay mask).
+- **Full Traditional Chinese Localization (`zh-TW`)**:
+  - Complete UI and documentation localization in Traditional Chinese ([README_zh-TW.md](README_zh-TW.md)), synchronized with upstream v2.5.0 improvements (including Spanish language support and Display mirroring).
+
+---
 
 ## What it does
 
