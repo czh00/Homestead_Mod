@@ -570,4 +570,22 @@ public final class Prefs {
     public static void clearDisabledRecord(Context c) {
         sp(c).edit().putStringSet(K_DISABLED, new HashSet<String>()).apply();
     }
+
+    // ------------------------------------------------------ custom input labels
+
+    private static final String P_INPUT_LABEL = "input_label_";
+
+    public static String customInputLabel(Context c, String inputId) {
+        if (inputId == null) return null;
+        return sp(c).getString(P_INPUT_LABEL + inputId, null);
+    }
+
+    public static void setCustomInputLabel(Context c, String inputId, String label) {
+        if (inputId == null) return;
+        if (label == null || label.trim().length() == 0) {
+            sp(c).edit().remove(P_INPUT_LABEL + inputId).apply();
+        } else {
+            sp(c).edit().putString(P_INPUT_LABEL + inputId, label.trim()).apply();
+        }
+    }
 }

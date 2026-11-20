@@ -917,4 +917,17 @@
   <string name="set_apps_one">應用程式整合為一列</string>
   <string name="set_apps_one_help">電視應用程式與其他應用程式一同顯示於單一格線中，作為單一清單進行排序。其他應用程式將以其圖示製成寬圖塊顯示。</string>
   <string name="ro_in_apps">位於「應用程式」中</string>
+  <string name="tm_rename_input">自訂名稱</string>
+  <string name="tm_rename_input_help">變更此 HDMI 連接埠在主畫面上的自訂顯示名稱。</string>
+  <string name="rename_input_title">自訂輸入名稱</string>
+  <string name="rename_sec_custom">自訂名稱</string>
+  <string name="rename_save">儲存名稱</string>
+  <string name="rename_save_help">儲存上方輸入的自訂名稱。</string>
+  <string name="rename_sec_presets">常用預設名稱</string>
+  <string name="rename_active">目前使用</string>
+  <string name="rename_sec_reset">還原預設</string>
+  <string name="rename_reset">還原為預設名稱 (%1$s)</string>
+  <string name="rename_reset_help">還原為電視原始的 HDMI 連接埠名稱。</string>
+  <string name="rename_saved_toast">已更名為 %1$s</string>
+  <string name="rename_reset_toast">已還原為 %1$s</string>
 </resources>

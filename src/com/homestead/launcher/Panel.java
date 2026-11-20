@@ -242,6 +242,11 @@ public class Panel {
 
     // ---------------------------------------------------------------- building
 
+    public void addView(View v) {
+        column.addView(v);
+        lastRow = null;
+    }
+
     /** A section heading inside the list. */
     public void addHeader(String text) {
         TextView h = text(text.toUpperCase(Locale.US), 12, HEAD);

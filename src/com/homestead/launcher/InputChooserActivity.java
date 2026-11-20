@@ -111,6 +111,11 @@ public class InputChooserActivity extends Activity {
                             }
                         }
 
+                        String custom = Prefs.customInputLabel(c, info.getId());
+                        if (custom != null && !custom.isEmpty() && !custom.equalsIgnoreCase(label)) {
+                            label = custom + " (" + label + ")";
+                        }
+
                         int state = TvInputManager.INPUT_STATE_DISCONNECTED;
                         if (Build.VERSION.SDK_INT >= 24) {
                             try {

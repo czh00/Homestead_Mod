@@ -116,6 +116,7 @@ public final class AppModel {
         public String inputId;
         public String scId;
         public String label;
+        public String defaultLabel;
         /**
          * Declares LEANBACK_LAUNCHER or has banner art. Many Fire OS apps declare only
          * LAUNCHER plus android:banner, and still belong on the banner grid.
@@ -563,9 +564,24 @@ public final class AppModel {
                 it.inputId = info.getId();
                 CharSequence lb = null;
                 try { lb = info.loadLabel(c); } catch (Throwable t) { }
-                it.label = (lb == null || lb.length() == 0) ? c.getString(R.string.home_input) : lb.toString();
-                it.glyph = it.label.toUpperCase(Locale.US).startsWith("HDMI")
-                        ? R.drawable.ic_in_hdmi : R.drawable.ic_in_composite;
+                String raw = (lb == null || lb.length() == 0) ? "" : lb.toString();
+                int port = InputChooserActivity.extractPortNumber(raw, it.inputId);
+                String def = raw;
+                if (def.isEmpty() || def.equalsIgnoreCase("HDMI") || def.equals(c.getString(R.string.home_input))) {
+                    if (port >= 1 && port <= 8) {
+                        def = "HDMI " + port;
+                    } else {
+                        def = c.getString(R.string.home_input);
+                    }
+                }
+                it.defaultLabel = def;
+                boolean isHdmi = def.toUpperCase(Locale.US).startsWith("HDMI")
+                        || (it.inputId != null && it.inputId.toUpperCase(Locale.US).contains("HDMI"))
+                        || (info.getType() == TvInputInfo.TYPE_HDMI);
+                it.glyph = isHdmi ? R.drawable.ic_in_hdmi : R.drawable.ic_in_composite;
+
+                String custom = Prefs.customInputLabel(c, it.inputId);
+                it.label = (custom != null && custom.length() > 0) ? custom : def;
                 it.connected = inputConnected(tim, it.inputId);
                 ITEMS.add(it);
             }
@@ -819,9 +835,16 @@ public final class AppModel {
                 if (px != py) return px < py ? -1 : 1;
                 if (x.type != y.type) return rank(x.type) - rank(y.type);
                 if (x.type == TYPE_INPUT) {
-                    boolean xh = x.label.toUpperCase(Locale.US).startsWith("HDMI");
-                    boolean yh = y.label.toUpperCase(Locale.US).startsWith("HDMI");
+                    boolean xh = (x.glyph == R.drawable.ic_in_hdmi)
+                            || (x.label != null && x.label.toUpperCase(Locale.US).startsWith("HDMI"))
+                            || (x.defaultLabel != null && x.defaultLabel.toUpperCase(Locale.US).startsWith("HDMI"));
+                    boolean yh = (y.glyph == R.drawable.ic_in_hdmi)
+                            || (y.label != null && y.label.toUpperCase(Locale.US).startsWith("HDMI"))
+                            || (y.defaultLabel != null && y.defaultLabel.toUpperCase(Locale.US).startsWith("HDMI"));
                     if (xh != yh) return xh ? -1 : 1;
+                    int portX = InputChooserActivity.extractPortNumber(x.defaultLabel, x.inputId);
+                    int portY = InputChooserActivity.extractPortNumber(y.defaultLabel, y.inputId);
+                    if (portX != portY) return portX < portY ? -1 : 1;
                     return collator.compare(x.label != null ? x.label : "", y.label != null ? y.label : "");
                 }
                 if (x.type != TYPE_APP) return 0;

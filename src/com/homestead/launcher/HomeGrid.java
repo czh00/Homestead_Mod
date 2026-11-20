@@ -26,14 +26,19 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.text.InputType;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -750,6 +755,13 @@ public class HomeGrid implements SettingsPanel.Host {
                 reorder(key);
             }
         }).setHelp(ctx.getString(pinned ? R.string.tm_unpin_help : R.string.tm_pin_help));
+        if (it.type == AppModel.TYPE_INPUT) {
+            p.addRow(ctx.getString(R.string.tm_rename_input), "", new Runnable() {
+                public void run() {
+                    showInputRenamePanel(it);
+                }
+            }).setHelp(ctx.getString(R.string.tm_rename_input_help));
+        }
         p.addRow(ctx.getString(R.string.tm_move), "", new Runnable() {
             public void run() {
                 closePanel();
@@ -773,6 +785,156 @@ public class HomeGrid implements SettingsPanel.Host {
         });
         showPanel(p.root);
         return true;
+    }
+
+    private void showInputRenamePanel(final AppModel.Item it) {
+        if (it == null || it.inputId == null) return;
+        final String orig = (it.defaultLabel != null && !it.defaultLabel.isEmpty()) ? it.defaultLabel : "HDMI";
+        final String current = (it.label != null && !it.label.isEmpty()) ? it.label : orig;
+
+        final Panel p = new Panel(ctx, ctx.getString(R.string.rename_input_title), orig, Panel.SHEET);
+
+        // Section: Custom free text input
+        p.addHeader(ctx.getString(R.string.rename_sec_custom));
+
+        final LinearLayout box = new LinearLayout(ctx);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(0, dp(4), 0, dp(4));
+
+        final EditText edit = new EditText(ctx);
+        edit.setText(current);
+        edit.setHint(orig);
+        edit.setSingleLine(true);
+        edit.setInputType(InputType.TYPE_CLASS_TEXT);
+        edit.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        edit.setTextColor(0xFFFFFFFF);
+        edit.setHintTextColor(0xFF7C8FA4);
+        edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        edit.setPadding(dp(16), dp(12), dp(16), dp(12));
+        edit.setFocusable(true);
+        edit.setFocusableInTouchMode(true);
+
+        final GradientDrawable editBg = new GradientDrawable();
+        editBg.setCornerRadius(dp(8));
+        editBg.setColor(0x20FFFFFF);
+        editBg.setStroke(dp(1), 0x40FFFFFF);
+        edit.setBackground(editBg);
+
+        edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            public void onFocusChange(View v, boolean hasFocus) {
+                editBg.setStroke(dp(2), hasFocus ? 0xFFFFFFFF : 0x40FFFFFF);
+                editBg.setColor(hasFocus ? 0x35FFFFFF : 0x20FFFFFF);
+                if (hasFocus && edit.getText() != null) {
+                    edit.setSelection(edit.getText().length());
+                }
+            }
+        });
+
+        edit.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                edit.requestFocus();
+                InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
+
+        box.addView(edit, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        p.addView(box);
+
+        final Runnable saveCustom = new Runnable() {
+            public void run() {
+                InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+                String val = (edit.getText() != null) ? edit.getText().toString().trim() : "";
+                if (val.isEmpty()) val = orig;
+                applyInputRename(it, val);
+            }
+        };
+
+        edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO
+                        || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                            && event.getAction() == KeyEvent.ACTION_DOWN)) {
+                    saveCustom.run();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        p.addRow(ctx.getString(R.string.rename_save), "", saveCustom)
+                .setHelp(ctx.getString(R.string.rename_save_help));
+
+        // Section: Presets
+        p.addHeader(ctx.getString(R.string.rename_sec_presets));
+
+        final String[] presets = new String[] {
+            "PS5",
+            "Switch",
+            "Apple TV",
+            "Xbox",
+            "MOD",
+            "PC",
+            "Soundbar",
+            "Chromecast",
+            "TV Box"
+        };
+
+        for (final String preset : presets) {
+            boolean active = preset.equalsIgnoreCase(current);
+            Panel.Row r = p.addRow(preset, active ? ctx.getString(R.string.rename_active) : "", new Runnable() {
+                public void run() {
+                    InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+                    applyInputRename(it, preset);
+                }
+            });
+            if (active) r.setValueColor(0xFFA7D28F);
+        }
+
+        // Section: Reset to default (if currently customized)
+        boolean isCustomized = (Prefs.customInputLabel(ctx, it.inputId) != null);
+        if (isCustomized) {
+            p.addHeader(ctx.getString(R.string.rename_sec_reset));
+            p.addRow(ctx.getString(R.string.rename_reset, orig), "", new Runnable() {
+                public void run() {
+                    InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+                    Prefs.setCustomInputLabel(ctx, it.inputId, null);
+                    it.label = orig;
+                    closePanels();
+                    reorder(it.key());
+                    try {
+                        Toast.makeText(ctx, ctx.getString(R.string.rename_reset_toast, orig), Toast.LENGTH_SHORT).show();
+                    } catch (Throwable ignored) { }
+                }
+            }).setHelp(ctx.getString(R.string.rename_reset_help));
+        }
+
+        p.addRow(ctx.getString(R.string.set_close), "", new Runnable() {
+            public void run() {
+                InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+                closePanel();
+            }
+        });
+
+        showPanel(p.root);
+    }
+
+    private void applyInputRename(final AppModel.Item it, final String newName) {
+        String finalName = (newName == null || newName.trim().isEmpty())
+                ? (it.defaultLabel != null ? it.defaultLabel : "HDMI")
+                : newName.trim();
+        Prefs.setCustomInputLabel(ctx, it.inputId, finalName);
+        it.label = finalName;
+        closePanels();
+        reorder(it.key());
+        try {
+            Toast.makeText(ctx, ctx.getString(R.string.rename_saved_toast, finalName), Toast.LENGTH_SHORT).show();
+        } catch (Throwable ignored) { }
     }
 
     /**

@@ -923,4 +923,17 @@
   <string name="set_apps_one">Apps in one row</string>
   <string name="set_apps_one_help">TV apps and the other apps together in one grid, sorted as one list. The other apps get wide tiles made from their icons.</string>
   <string name="ro_in_apps">in Apps</string>
+  <string name="tm_rename_input">Rename input</string>
+  <string name="tm_rename_input_help">Change the display name of this HDMI input on the home screen.</string>
+  <string name="rename_input_title">Rename Input</string>
+  <string name="rename_sec_custom">Custom Name</string>
+  <string name="rename_save">Save Name</string>
+  <string name="rename_save_help">Save the custom name above for this input port.</string>
+  <string name="rename_sec_presets">Popular Presets</string>
+  <string name="rename_active">Current</string>
+  <string name="rename_sec_reset">Reset</string>
+  <string name="rename_reset">Reset to default (%1$s)</string>
+  <string name="rename_reset_help">Restore the original HDMI port name.</string>
+  <string name="rename_saved_toast">Renamed to %1$s</string>
+  <string name="rename_reset_toast">Restored to %1$s</string>
 </resources>
