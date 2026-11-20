@@ -639,7 +639,13 @@ public class HomeGrid implements SettingsPanel.Host {
             return;
         }
         // The dock design starts on the dock, not on the first tile of the grid below it.
-        if (dock && !dockKeys.isEmpty() && selectKey(dockKeys.iterator().next())) return;
+        // And on the first screen: a grid that has just been rebuilt into this design may
+        // have focused a tile under the dock on the way, which scrolled the page, and the
+        // dock, still in view, would not scroll it back.
+        if (dock && !dockKeys.isEmpty() && selectKey(dockKeys.iterator().next())) {
+            keepAtTop();
+            return;
+        }
         takeFocus();
     }
 
@@ -953,14 +959,12 @@ public class HomeGrid implements SettingsPanel.Host {
 
     /**
      * Back to the plain grid. A Home press lands here, not on a page left open earlier.
-     * The first-run wizard stays, since losing it halfway through setup is worse.
+     * The setup guide stays, on a first run or opened again from Settings: one of its steps
+     * sends the user to Fire OS's settings, and Home is a natural way back from there.
      */
     public void closePanels() {
         while (!panels.isEmpty()) {
-            if (!Prefs.onboarded(ctx)
-                    && panels.get(panels.size() - 1).getTag() instanceof BackHandler) {
-                return;
-            }
+            if (OnboardingPanel.isWizard(panels.get(panels.size() - 1))) return;
             closePanel();
         }
     }
@@ -1006,6 +1010,11 @@ public class HomeGrid implements SettingsPanel.Host {
         public void showRow(String row) { grid.showRow(row); }
         public void showPanel(View v) { grid.showPanel(v); }
         public void closePanel() { grid.closePanel(); }
+        public void focusStart() { grid.focusStart(); }
+    }
+
+    public void focusStart() {
+        if (panels.isEmpty()) takeStartFocus();
     }
 
     /** A setting changed from a panel in this grid; the other grid catches up via syncOrder(). */
@@ -1703,6 +1712,11 @@ public class HomeGrid implements SettingsPanel.Host {
                 GradientDrawable ring = new GradientDrawable();
                 ring.setCornerRadius(radius);
                 if (has) {
+                    // The bar is the top of the dock design's first screen, so reaching it
+                    // brings that screen back: the background, with the dock at the bottom.
+                    // Left where it was, the grid stayed scrolled under the bar and the next
+                    // Down threw it back to the dock in one jump.
+                    if (dock && scroll.getScrollY() != 0) scroll.smoothScrollTo(0, 0);
                     ring.setStroke(dp(2), 0xF2FFFFFF);
                     ring.setColor(0x26FFFFFF);
                     cell.setForeground(ring);

@@ -43,6 +43,23 @@ Both pictures are from the same TV, a few minutes apart.
 
 ---
 
+## Styles
+
+<img src="screenshots/styles.jpg" alt="Six pictures of Homestead on one Fire TV Stick. Top row, the Dock design over three built-in landscapes: Mountains at dusk, Mountain lake, and Mount Ida, Crete. Bottom row: Dock over the Midnight colour, then the Classic design over the Deep sea colour and over Alps near Scuol.">
+
+All six are the same Fire TV Stick. The first four are the **Dock** design, the last two
+**Classic**.
+
+- **Design.** Classic keeps your inputs and apps in rows under their headings. Dock puts
+  the first of your TV apps on a band at the bottom of the first screen, in four sizes,
+  with the rest one press down.
+- **Background.** Eight colours, from the blue gradient to plain black, and eight built-in
+  landscapes: four drawn, four photos. Or [your own photo](#your-own-background-photo), or
+  Bing's image of the day.
+
+The first-run setup lets you try both with your own home screen beside the choices. Later
+they are under Settings → Home screen → Design, and Settings → Background.
+
 ## What it does
 
 - **A home screen without the ads.** Your inputs, your TV apps and everything else, in
@@ -157,7 +174,9 @@ app came to the front: it cannot read what is on screen and does not receive key
    options is not there, open My Fire TV → About and press Select on the device name seven
    times.
 2. Open **Homestead** from Amazon's app row. The first-run setup walks you through the
-   rest. Later, the same steps are under the **Settings** tile → **Setup**.
+   rest, then lets you choose the design and the background with your own home screen
+   beside the choices. Later, the same steps are under **Settings** → **Setup**, and
+   **Run setup again** in Settings opens the guide from the start.
 3. Select **Set it up** (or **On-device tunnel (advanced)** in Setup) and accept Android's
    VPN prompt. In both prompts, press Down to reach OK.
 4. The TV asks whether to allow the app's ADB key. Check that the fingerprint matches the
@@ -194,6 +213,14 @@ The first two commands switch the Home button on; the first replaces any other
 accessibility service you have switched on. The first grant lets TV Health change settings
 from the remote. The second lets Homestead catch the Home press early, so Amazon's home
 screen does not flash first, and makes Home work while Amazon's home screen is showing.
+On Fire OS 6, which refuses the accessibility service, also run
+
+```sh
+adb shell appops set com.homestead.launcher SYSTEM_ALERT_WINDOW allow
+```
+
+so Homestead can show its grid at once instead of after Fire OS's few seconds' hold (see
+[How the Home button works](#how-the-home-button-works)).
 To switch packages off, open **Commands for a computer** in the app: it lists exactly the
 commands still needed on your TV.
 
@@ -248,7 +275,7 @@ The picture is removed when Homestead is uninstalled.
 
 ## Setting it up for someone else
 
-Choose **Simple mode** on the first setup screen (or switch it on later in Settings) when
+Choose **Simple mode** in the first-run setup (or switch it on later in Settings) when
 the TV is for someone who just wants to watch it, such as a parent or grandparent.
 
 - **The Settings and TV Health tiles are hidden.** To open Settings, press **Menu (☰)
@@ -258,7 +285,7 @@ the TV is for someone who just wants to watch it, such as a parent or grandparen
   Hide what you want before you switch it on, or open Settings to change it later.
 - **No update pop-ups.** Homestead does not check for updates by itself; use *Check for
   updates* in Settings when you visit.
-- **When chosen during setup, it switches off Debloat's safe list** (what the *Switch off
+- **When turned on during setup, it switches off Debloat's safe list** (what the *Switch off
   everything marked safe* button does: ads, telemetry, tutorials and demo content), except
   Amazon Photos, which stays on for family pictures. Alexa is left on too, since asking
   for a show by voice is often easier than finding it with the remote. This needs the
@@ -314,6 +341,16 @@ watches the log for that one line and the overlay goes up first. It is also the 
 notice a Home press made while Amazon's home screen is already in front, since that changes
 no window. That needs `READ_LOGS`, which setup grants over ADB; [SECURITY.md](SECURITY.md)
 says exactly what is read.
+
+Fire OS 6 does not bind third-party accessibility services at all, so there the log watcher
+alone notices the Home press, and the overlay is a system-alert window, which needs
+`SYSTEM_ALERT_WINDOW` (`appops set ... SYSTEM_ALERT_WINDOW allow`). Nothing an app can do on
+Fire OS 6 lifts the hold on app launches (a `PendingIntent`, an alarm and moving a task are
+held too), and without the overlay Homestead appears only after it. While the overlay
+is in use, the Home watch runs as a foreground service, so it is not slowed down while
+another app is in front. An app picked on the overlay starts when the hold ends; the overlay
+stays until it has had time to draw, since Fire OS 6 does not let apps read when another
+app's window is drawn.
 
 ## Known limitations
 

@@ -2,7 +2,7 @@
 <resources>
   <string name="app_name">Homestead</string>
   <string name="service_desc">將首頁按鈕重新導向至 Homestead，而非 Amazon 啟動器。</string>
-  <!-- 首頁螢幕。翻譯檔位於 values-<lang>；Android 會採用電視的系統語言。 -->
+  <!-- Home screen. Translations live in values-<lang>; Android picks the TV's language. -->
   <string name="home_livetv">實況電視</string>
   <string name="home_livetv_hint">按 OK 觀看</string>
   <string name="home_livetv_failed">無法使用實況電視</string>
@@ -13,10 +13,12 @@
   <string name="home_restore_refused">Fire OS 保持開啟 %1$s</string>
   <string name="home_connecting">正在連線至電視…</string>
   <string name="home_sec_settings">Fire TV 設定</string>
-  <!-- Fire TV 設定捷徑：圖塊上的完整名稱，以及頂部列上的簡短名稱。 -->
+  <!-- Fire TV settings shortcuts: the name on a tile, and the shorter one on a top-bar pill. -->
   <string name="home_sc_network">網路</string>
   <string name="home_sc_display">顯示與音訊</string>
   <string name="home_sc_display_short">顯示</string>
+  <string name="home_sc_mirroring">螢幕鏡像</string>
+  <string name="home_sc_mirroring_short">鏡像</string>
   <string name="home_sc_controllers">遙控器與藍牙</string>
   <string name="home_sc_controllers_short">遙控器</string>
   <string name="home_sc_accessibility">無障礙功能</string>
@@ -45,9 +47,9 @@
   <string name="home_greet_afternoon">午安</string>
   <string name="home_greet_evening">晚安</string>
 
-  <!-- 語言：各語言名稱以其本國語言撰寫於 Lang.java 中。 -->
+  <!-- Language: the names of the languages themselves are in Lang.java, in their own language. -->
   <string name="lang_tv">電視語言</string>
-  <!-- 首頁螢幕選項 -->
+  <!-- Home screen options -->
   <string name="opt_greeting">問候語</string>
   <string name="opt_greeting_help">左上角顯示「早安」、「午安」或「晚安」。啟用捷徑列時不顯示。</string>
   <string name="opt_greeting_bar">不與捷徑列同時顯示</string>
@@ -56,11 +58,6 @@
   <string name="set_firetv_help">從此處開啟的 Amazon 設定畫面，例如網路、藍牙與應用程式、完整的設定選單，以及首頁螢幕的設定捷徑。</string>
   <string name="opt_date_long">星期與月份</string>
   <string name="opt_date_short">數字</string>
-  <string name="opt_resources">系統資源資訊</string>
-  <string name="opt_resources_help">在日期右方即時顯示記憶體（RAM）使用率與儲存空間可用容量。</string>
-  <string name="opt_res_ram_storage">RAM + 儲存空間</string>
-  <string name="opt_res_ram_only">僅 RAM</string>
-  <string name="res_storage_avail">儲存 %.1fG 可用</string>
   <string name="opt_wide">非電視應用程式顯示為寬圖塊</string>
   <string name="opt_wide_help">如同 Fire TV 原始首頁：每個應用程式圖示均位於橫幅大小的圖塊上，呈現如電視應用程式般的格線排列。</string>
   <string name="opt_fire">Fire TV 系統圖示</string>
@@ -76,7 +73,7 @@
   <string name="opt_dock_l">大</string>
   <string name="opt_dock_xl">特大</string>
 
-  <!-- 設定 -->
+  <!-- Settings -->
   <string name="set_title">設定</string>
   <string name="set_home">首頁螢幕</string>
   <string name="set_bg">背景</string>
@@ -211,13 +208,15 @@
   <string name="set_setup_off">首頁按鈕已關閉</string>
   <string name="set_setup_todo">未完成</string>
   <string name="set_setup_help">此啟動器所需的需求，以及啟用方式。</string>
+  <string name="set_rerun">重新執行初始設定</string>
+  <string name="set_rerun_help">從頭再次開啟初次設定精靈：語言、Home 按鈕、系統精簡、簡易模式、設計風格與背景桌布。在該處做出選擇前不會變更任何設定。</string>
   <string name="set_health">電視狀態</string>
   <string name="set_health_value">檢查</string>
   <string name="set_health_help">此電視的運作速度、隱私設定及 Amazon 廣告套件，並提供標示項目的修復方式。</string>
   <string name="set_debloat">精簡系統</string>
   <plurals name="set_debloat_value">
-    <item quantity="one">已關閉 %1$d 個</item>
-    <item quantity="other">已關閉 %1$d 個</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <string name="set_debloat_help">關閉或重新啟用 Amazon 的套件。任何項目都不會被解除安裝。</string>
   <string name="set_updates">檢查更新</string>
@@ -250,11 +249,11 @@
   <string name="set_shown_value">已顯示</string>
   <string name="set_show_all">顯示所有已隱藏圖塊</string>
 
-  <!-- 以文字顯示的數值（開關列則使用切換開關） -->
+  <!-- Values shown as text (switch rows use a toggle instead) -->
   <string name="v_on">開啟</string>
   <string name="v_off">關閉</string>
 
-  <!-- 設定導引 -->
+  <!-- Setup -->
   <string name="setup_sub">此啟動器所需的需求，以及啟用方式</string>
   <string name="setup_status">狀態</string>
   <string name="setup_svc">首頁按鈕重新導向</string>
@@ -292,7 +291,7 @@
   <string name="setup_needs_computer">需要電腦</string>
   <string name="setup_press_again">再按一次以關閉</string>
   <string name="setup_could_not">失敗，請重試</string>
-  <string name="setup_svc_help_fo6">Fire OS 6 不允許 Homestead 重新導向首頁按鈕，因此 Homestead 改為監控首頁按鈕的按下操作並自行開啟。按首頁鍵後 Fire OS 會延遲其他應用程式數秒，因此 Amazon 首頁會先出現一下。\n\n這需要 READ_LOGS 權限，需透過電腦以「電腦專用指令」授予。如果您曾關閉首頁按鈕，選取此列即可重新開啟，無需電腦。</string>
+  <string name="setup_svc_help_fo6">Fire OS 6 不允許 Homestead 重新導向 Home 按鈕，因此 Homestead 改為監控按下 Home 鍵的動作並自行開啟。Fire OS 在按下 Home 後會暫緩啟動其他應用程式數秒。在擁有浮層權限的情況下，Homestead 會立即顯示網格以覆蓋這段等待時間；若無此權限，則會先短暫看到 Amazon 首頁。\n\n此功能需要 READ_LOGS 權限，浮層則需要 SYSTEM_ALERT_WINDOW 權限，兩者均可透過「電腦指令」從電腦授予。若您曾關閉 Home 按鈕，選取此列即可重新開啟；無需使用電腦。</string>
   <string name="setup_turn_off_help_fo6">關閉後，按首頁鍵會立即回到 Amazon 首頁。若要重新開啟，請選取設定導引頂部的「首頁按鈕重新導向」，無需電腦。連按兩次以確認。</string>
   <string name="setup_on_fo6">開啟 (Fire OS 6)</string>
   <string name="setup_off_select">關閉 - 選取以開啟</string>
@@ -323,11 +322,10 @@
   <string name="setup_c_retry">嘗試重新連線</string>
   <string name="setup_c_on">開啟 ADB 連線</string>
 
-  <!-- 初次使用導引精靈 -->
+  <!-- First-run wizard -->
   <string name="onb_welcome_title">一個不打擾您的首頁螢幕。</string>
   <string name="onb_welcome_body">沒有廣告橫幅、沒有自動播放的預告片、沒有贊助推薦內容——只有您的應用程式與輸入訊號源。若您願意，還能一鍵關閉 Amazon 的廣告與遙測數據收集。</string>
   <string name="onb_start">開始使用</string>
-  <string name="onb_language">語言：%1$s</string>
   <string name="onb_skip">略過設定</string>
   <string name="onb_step">第 %1$d 步，共 %2$d 步</string>
   <string name="onb_choose_title">您想要進行哪些設定？</string>
@@ -335,40 +333,62 @@
   <string name="onb_card_home">取代首頁螢幕</string>
   <string name="onb_card_home_desc">首頁按鈕將開啟此啟動器，而非 Amazon 首頁。</string>
   <string name="onb_card_clean">清理我的電視</string>
-  <string name="onb_card_clean_desc">關閉 Amazon 的廣告與遙測功能，並關閉系統動畫。</string>
+  <string name="onb_card_clean_desc">將應用程式連線至電視本機服務，隨後即可一鍵關閉 Amazon 廣告與遙測數據。絕不解除安裝任何項目。</string>
   <string name="onb_card_clean_pill">進階</string>
   <string name="onb_card_simple_desc">適合單純看電視的使用者：隱藏設定、不顯示更新彈窗、關閉 Amazon 廣告與遙測。</string>
   <string name="onb_card_simple_pill">給長輩或親友使用</string>
+  <string name="onb_pill_on">已開啟</string>
+  <string name="onb_pill_linked">已連線</string>
   <string name="onb_continue">繼續</string>
+  <string name="onb_dbg_title">開啟 ADB 偵錯</string>
+  <string name="onb_dbg_body">Homestead 透過電視本身的偵錯服務進行自我設定，因此無需電腦。該服務是一項 Fire OS 系統設定，必須先將其開啟。</string>
+  <string name="onb_dbg_step1">按「開啟我的 Fire TV」，然後選擇「開發人員選項」</string>
+  <string name="onb_dbg_step2">將「ADB 偵錯」切換為開啟，然後按返回鍵回到此處</string>
+  <string name="onb_dbg_note">找不到開發人員選項？在「我的 Fire TV」中開啟「關於」，對著電視名稱連按七次選取鍵。</string>
+  <string name="onb_dbg_on">ADB 偵錯已開啟</string>
+  <string name="onb_dbg_off">ADB 偵錯已關閉</string>
   <string name="onb_home_title">啟用首頁螢幕</string>
   <string name="onb_home_body">Fire OS 未在其無障礙功能選單中列出 Homestead，因此應用程式會透過電視自身的偵錯服務自行開啟。無需電腦。</string>
-  <string name="onb_home_step1">開啟 ADB 偵錯：設定 > 我的 Fire TV > 開發者選項</string>
-  <string name="onb_home_step2">按下「進行設定」並核准兩項提示：VPN 提示，接著是電視的金鑰提示。請在第二項勾選「一律允許」</string>
-  <string name="onb_home_note">Android 的 VPN 提示會顯示該應用程式可能會監控網路流量；Homestead 僅傳輸電視本身的偵錯連線，且連線絕不離開電視。在各提示中，按方向鍵「下」即可選取「確定」。找不到開發者選項？請開啟「我的 Fire TV」>「關於」，在裝置名稱上連按七次「選取」鍵。若想稍後再設定，請按「繼續」；您仍可從 Amazon 的應用程式列中開啟 Homestead。</string>
+  <string name="onb_home_step1">按「進行設定」。隨後會出現兩道提示；在每個提示中按向下鍵選取「確定」</string>
+  <string name="onb_home_step2">同意 VPN 提示，隨後在電視金鑰提示中勾選「永遠允許」並確認</string>
+  <string name="onb_home_note">Android 的 VPN 提示會說明應用程式可能監控網路流量。Homestead 的連線僅傳輸電視本身的偵錯服務，資料絕不離開電視。若想稍後再設定，請按「繼續」；Homestead 仍可從 Amazon 應用程式列中開啟。</string>
   <string name="onb_open_mft">開啟「我的 Fire TV」</string>
   <string name="onb_set_up">進行設定</string>
   <string name="onb_adb_title">讓應用程式清理您的電視</string>
   <string name="onb_adb_body">為了關閉 Amazon 的套件，應用程式需要透過 ADB 取得與電腦相同的權限——因此它會與電視本身的服務建立私人連線。無需電腦、無需帳號，任何資料絕不離開電視。</string>
-  <string name="onb_adb_step">請核准兩項提示：VPN 提示，接著是電視的金鑰提示。請在第二項勾選「一律允許」</string>
+  <string name="onb_adb_step">按「進行設定」並同意兩道提示。在第二道提示中勾選「永遠允許」</string>
+  <string name="onb_adb_step2">隨後若有需要，可關閉精簡系統的安全清單。絕不解除安裝任何項目</string>
+  <string name="onb_clean_now">關閉安全清單中的項目</string>
   <string name="onb_adb_note">Android 的 VPN 提示會顯示該應用程式可能會監控網路流量；Homestead 僅傳輸電視本身的偵錯連線。它僅在清理電視時運作，隨後便會自動關閉。</string>
   <string name="onb_simple_1">「設定」與「電視狀態」已被隱藏。連按五次 Menu 鍵可開啟設定。</string>
   <string name="onb_simple_2">按 Menu 鍵與按住「選取」鍵不再隱藏圖塊。</string>
   <string name="onb_simple_3">不顯示更新彈窗。請改由「設定」手動檢查更新。</string>
+  <string name="onb_simple_4">關閉精簡系統的安全清單：Amazon 廣告、遙測數據與未使用的額外項目。</string>
+  <string name="onb_simple_turn_on">開啟簡易模式</string>
+  <string name="onb_simple_is_on">簡易模式已開啟</string>
   <string name="onb_try_again">重試</string>
   <string name="onb_clean_running">正在關閉精簡安全清單中的項目：廣告、遙測、未使用的附加功能…</string>
   <string name="onb_clean_already">精簡安全清單 - 已關閉</string>
   <plurals name="onb_clean_done">
-    <item quantity="one">精簡安全清單 - 已關閉 %1$d 個項目。保留 Alexa 與 Amazon Photos 開啟</item>
-    <item quantity="other">精簡安全清單 - 已關閉 %1$d 個項目。保留 Alexa 與 Amazon Photos 開啟</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <plurals name="onb_clean_partial">
-    <item quantity="one">精簡安全清單 - 已關閉 %1$d / %2$d 個項目；其餘項目受 Fire OS 保護</item>
-    <item quantity="other">精簡安全清單 - 已關閉 %1$d / %2$d 個項目；其餘項目受 Fire OS 保護</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <string name="onb_clean_failed">無法連線以執行精簡安全清單 - 請重試</string>
   <string name="onb_clean_no_link">未執行安全清單：需要先透過「進行設定」建立連線</string>
   <string name="onb_menu_done">✓ 完成——在首頁螢幕連按五次 Menu 鍵即可開啟設定。</string>
   <string name="onb_menu_try">現在試試看：連按五次 Menu 鍵（三條線按鈕）。</string>
+  <string name="onb_design_title">選擇設計風格</string>
+  <string name="onb_design_body">左側即為您的首頁螢幕。選取設計風格以進行預覽體驗。</string>
+  <string name="onb_design_classic">您的應用程式依橫列排列，每個橫列均有標題。</string>
+  <string name="onb_design_dock">最常用的電視應用程式置於底部底欄，其餘內容整齊排列於下方網格中。</string>
+  <string name="onb_look_title">選擇背景桌布</string>
+  <string name="onb_look_body">選取桌布即可在首頁螢幕上即時預覽。</string>
+  <string name="onb_look_colors">純色與漸層</string>
+  <string name="onb_look_more">您自訂的相片與 Bing 每日桌布位於「設定」中的「背景」選單。</string>
   <string name="onb_all_set">全部設定就緒</string>
   <string name="onb_ready">一切就緒。</string>
   <string name="onb_done_home_on">首頁螢幕 - 已啟用</string>
@@ -376,10 +396,10 @@
   <string name="onb_done_clean_on">電視清理 - 就緒；可在精簡系統中選擇要關閉的項目</string>
   <string name="onb_done_clean_skip">電視清理 - 暫時略過</string>
   <string name="onb_done_simple">簡易模式 - 已啟用</string>
-  <string name="onb_done_safe_off">精簡安全清單 - 已關閉</string>
   <string name="onb_done_safe_not">精簡安全清單 - 尚未執行；可使用精簡系統中的按鈕</string>
   <string name="onb_done_simple_body">如需開啟設定，請在首頁螢幕連按五次 Menu 鍵。所有功能都在那裡——隱藏的應用程式、電視狀態、精簡系統、更新及簡易模式本身。</string>
   <string name="onb_done_body">您可隨時從首頁螢幕的「設定」圖塊中找到所有功能——隱藏的應用程式、排序、電視狀態及精簡系統。</string>
+  <string name="onb_done_body_bar">日後可在首頁右上角的「設定」按鈕中再次找到所有選項 —— 隱藏的應用程式、排序方式、電視健康度與系統精簡。</string>
   <string name="onb_finish">完成</string>
   <string name="onb_chip_on">已開啟 - 按 Home 鍵試試看</string>
   <string name="onb_chip_switching">已連線 - 正在開啟…</string>
@@ -391,7 +411,7 @@
   <string name="onb_chip_no_daemon">請先開啟 ADB 偵錯</string>
   <string name="onb_chip_not_yet">尚未設定</string>
 
-  <!-- 電視狀態 -->
+  <!-- TV Health -->
   <string name="health_sub_rw">偵測到的狀態 - 可在此套用修正</string>
   <string name="health_sub_ro">偵測到的狀態 - 完成設定導引前為唯讀</string>
   <string name="health_not_active">未啟用</string>
@@ -432,8 +452,8 @@
   <string name="health_open_debloat">開啟精簡系統</string>
   <string name="health_p_all_off">清單中所有 Fire OS 允許應用程式關閉的項目皆已關閉。</string>
   <plurals name="health_p_some_left">
-    <item quantity="one">清單中尚有 %1$d 個套件可被關閉。「精簡系統」可逐一或一次關閉它們，並能以相同方式還原。經「精簡系統」嘗試後被 Fire OS 拒絕的套件將被計為受保護項目。</item>
-    <item quantity="other">清單中尚有 %1$d 個套件可被關閉。「精簡系統」可逐一或一次關閉它們，並能以相同方式還原。經「精簡系統」嘗試後被 Fire OS 拒絕的套件將被計為受保護項目。</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <string name="health_p_protected_note">少數遙測套件受 Fire OS 保護，即使已關閉上方的隱私開關，任何應用程式均無法將其關閉。</string>
   <string name="health_resources">系統資源</string>
@@ -444,7 +464,7 @@
   <string name="health_tiles">顯示圖塊</string>
   <string name="health_unset">未設定</string>
 
-  <!-- 精簡系統頁面 -->
+  <!-- Debloat page -->
   <string name="db_sub">可逆操作。任何項目都不會被解除安裝。</string>
   <string name="db_this_tv">此電視</string>
   <string name="db_help">每個項目皆透過「pm disable-user」關閉，這會將應用程式及其資料保留在電視上，並可透過「pm enable」復原。停用不會釋放儲存空間，但能釋放記憶體並減少處理器佔用。</string>
@@ -479,8 +499,8 @@
   <string name="db_x_restored">已還原 %1$s</string>
   <string name="db_not_present">不存在</string>
   <plurals name="db_n_off">
-    <item quantity="one">已關閉 %1$d / %2$d 個</item>
-    <item quantity="other">已關閉 %1$d / %2$d 個</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <string name="db_already">已完成</string>
   <string name="db_working_on">正在處理 %1$d 個…</string>
@@ -504,7 +524,7 @@
   <string name="db_launcher_t">Amazon 啟動器</string>
   <string name="db_launcher_n">按首頁鍵可直接開啟 Homestead，無覆蓋層且不會閃現 Amazon 首頁畫面。任何僅存在於 Amazon 首頁上的功能（例如其輸入訊號源畫面）將停止運作，直到您重新開啟此項。韌體更新可能會自動重新啟用此項。</string>
 
-  <!-- 電腦專用指令 -->
+  <!-- Commands for a computer -->
   <string name="cmd_sub">僅包含此電視不允許應用程式自行執行的步驟</string>
   <string name="cmd_connecting">連線中</string>
   <string name="cmd_no_network">無網路</string>
@@ -518,6 +538,8 @@
   <string name="cmd_wss_note">一條指令即可讓「電視狀態」頁面中的所有項目永久可直接由遙控器修改：</string>
   <string name="cmd_logs">提早捕捉首頁按鍵操作</string>
   <string name="cmd_logs_note">若未執行此項，每次按首頁鍵時 Amazon 首頁會短暫閃現，且當 Amazon 首頁顯示時按首頁鍵將無任何反應。Homestead 僅使用此權限在系統記錄中偵測首頁按鍵：</string>
+  <string name="cmd_overlay">立即顯示 Homestead (Fire OS 6)</string>
+  <string name="cmd_overlay_note">Fire OS 在按下 Home 鍵後會暫緩啟動其他應用程式約 5 秒，若無此權限會先短暫顯示 Amazon 首頁。擁有此權限後，Homestead 能立即在 Amazon 首頁之上繪製網格，並在暫緩結束時切換至應用程式本體：</string>
   <string name="cmd_ads">廣告與遙測</string>
   <string name="cmd_running">仍在執行中</string>
   <string name="cmd_none">無</string>
@@ -525,7 +547,7 @@
   <string name="cmd_pkgs_note">不會解除安裝任何內容且不刪除任何資料。「精簡系統」頁面列出了各套件的作用。Alexa 與其他標記為注意的項目在此排除，因其會改變電視運作行為——請在介面中個別選擇。</string>
   <string name="cmd_none_running">追蹤的廣告或遙測套件均未在執行。</string>
 
-  <!-- 更新 -->
+  <!-- Updates -->
   <string name="upd_title">有可用更新</string>
   <string name="upd_see_release">請參閱發行版本頁面以了解詳細資訊。</string>
   <string name="upd_install">安裝</string>
@@ -569,7 +591,7 @@
   <string name="upd_no_cache">無下載快取目錄</string>
   <string name="upd_info_too_large">發行資訊過大</string>
 
-  <!-- 相片挑選器 -->
+  <!-- Photo picker -->
   <string name="photo_sub">電視「Download」資料夾中的圖片</string>
   <string name="photo_note">請先在電視上儲存圖片：Downloader 應用程式與 Silk 瀏覽器均會將檔案存放在「Download」目錄。Homestead 會透過其裝置端通道存取該目錄，因此無需儲存空間權限。</string>
   <string name="photo_needs_tunnel">需要通道</string>
@@ -579,12 +601,12 @@
   <string name="photo_none_found">找不到圖片</string>
   <string name="photo_none_note">「Download」資料夾中尚無 JPEG 或 PNG 檔案。</string>
   <plurals name="photo_n">
-    <item quantity="one">%1$d 張圖片</item>
-    <item quantity="other">%1$d 張圖片</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <plurals name="photo_skipped">
-    <item quantity="one">有 %1$d 張圖片因名稱包含特殊字元而未列出。請使用英數字、空格、點或連字號重新命名。</item>
-    <item quantity="other">有 %1$d 張圖片因名稱包含特殊字元而未列出。請使用英數字、空格、點或連字號重新命名。</item>
+    <item quantity="one">已停用 %1$d 個</item>
+    <item quantity="other">已停用 %1$d 個</item>
   </plurals>
   <string name="photo_sending">正在傳送…</string>
   <string name="photo_set">設為背景</string>
@@ -593,7 +615,7 @@
   <string name="photo_not_used">未使用</string>
   <string name="photo_no_answer">無回應 - 請重試</string>
 
-  <!-- 背景：bg_<小寫預設名稱> -->
+  <!-- Backgrounds: bg_<preset name in lower case> -->
   <string name="bg_sky">天空藍</string>
   <string name="bg_midnight">午夜藍</string>
   <string name="bg_charcoal">炭灰</string>
@@ -623,7 +645,6 @@
   <string name="bg_bing_mkt_es">西班牙</string>
   <string name="bg_bing_mkt_jp">日本</string>
   <string name="bg_bing_mkt_cn">中國</string>
-  <string name="bg_bing_mkt_tw">台灣</string>
   <string name="bg_bing_mkt_br">巴西</string>
   <string name="bg_bing_mkt_in">印度</string>
   <string name="ls_drawn_dusk">暮色山巒</string>
@@ -645,7 +666,7 @@
   <string name="bg_dim_light">輕度</string>
   <string name="bg_dim_dark">深度</string>
 
-  <!-- 圖塊、輸入訊號源與 ADB 連線 -->
+  <!-- Tiles, inputs and the ADB link -->
   <string name="home_amazon">Amazon 首頁</string>
   <string name="home_input">輸入訊號</string>
   <string name="hdmi_no_signal">此輸入訊號源無訊號</string>
@@ -657,7 +678,7 @@
   <string name="adb_denied">未授權</string>
   <string name="adb_self_refused">此電視不允許</string>
 
-  <!-- 精簡目錄：_t 為項目名稱，_n 為其說明 -->
+  <!-- Debloat catalogue: _t is the row, _n its explanation -->
   <string name="db_usually_protected">通常受 Fire OS 保護。</string>
   <string name="db_adid_t">廣告 ID 服務</string>
   <string name="db_adid_n">產生用於向此電視投放定向廣告的識別碼。</string>
@@ -774,7 +795,7 @@
   <string name="db_showon_t">「投放至 Fire TV」投影</string>
   <string name="db_showon_n">從 Echo 或 Fire 平板將內容投放投影至此電視。</string>
 
-  <!-- Fire TV 設定頁面 (1.7.0) -->
+  <!-- Fire TV settings page (1.7.0) -->
   <string name="ftv_open_here">從此處開啟</string>
   <string name="ftv_all">所有 Amazon 設定</string>
   <string name="ftv_all_needs">需要啟動器</string>
@@ -803,6 +824,7 @@
   <string name="ftv_place_bar">頂部列</string>
   <string name="ftv_h_network">Wi-Fi、乙太網路與新增網路。</string>
   <string name="ftv_h_display">解析度、HDR、音訊、HDMI 設備控制、微光模式。</string>
+  <string name="ftv_h_mirroring">在此電視上顯示手機、平板或電腦的螢幕 (Miracast)。按遙控器任意鍵即可退出。</string>
   <string name="ftv_h_controllers">配對遙控器、遊戲手把或任何藍牙裝置。</string>
   <string name="ftv_h_accessibility">字幕、口述影像、螢幕報讀功能。</string>
   <string name="ftv_h_applications">已安裝的應用程式、儲存空間與權限。</string>
@@ -814,7 +836,7 @@
   <string name="ftv_h_equipment">使用 Fire TV 遙控器控制長條音箱、擴大機或電視盒。</string>
   <string name="ftv_h_help">Amazon 的說明教學影片、使用手冊與聯絡管道。</string>
 
-  <!-- Amazon 啟動器已關閉 (1.7.0) -->
+  <!-- Amazon's launcher switched off (1.7.0) -->
   <string name="lo_title">Amazon 啟動器已關閉</string>
   <string name="lo_only">僅 Amazon 啟動器具備的項目</string>
   <string name="lo_inputs">輸入訊號畫面</string>
@@ -841,7 +863,7 @@
   <string name="lo_still_note">Amazon 的「設定」應用程式 (com.amazon.tv.settings.v2) 是獨立套件，依然正常運作。由「設定」>「系統」>「Fire TV 設定」可直接開啟其各個畫面。</string>
   <string name="lo_back_on">若要重新開啟 Amazon 啟動器：精簡系統 >「Amazon 啟動器」，或執行 adb shell pm enable --user 0 com.amazon.tv.launcher</string>
 
-  <!-- 復原圖塊、設定與 HDMI (1.6.11 至 1.7.0) -->
+  <!-- Restore tile, Setup and HDMI (1.6.11 to 1.7.0) -->
   <string name="home_names_two">%1$s 與 %2$s</string>
   <string name="home_names_three">%1$s、%2$s 與 %3$s</string>
   <string name="home_names_more">%1$s、%2$s 以及其他 %3$d 項</string>
@@ -849,7 +871,7 @@
   <string name="setup_off_need_launcher">關閉 - 請在「精簡系統」中開啟 Amazon 啟動器</string>
   <string name="hdmi_open_failed">無法開啟此輸入訊號源</string>
 
-  <!-- 列順序 (1.7.1) -->
+  <!-- Row order (1.7.1) -->
   <string name="set_home_help">已隱藏圖塊、排序、格線欄數、時鐘，以及各列與其排列順序。</string>
   <string name="set_tvfirst_help">在所有列上方顯示大型「實況電視」圖塊，且按 Home 鍵總是停留在其上。下方的列依循「列順序」。</string>
   <string name="ftv_sc_row_help">首頁螢幕上的設定捷徑：可設為獨立一列（於「設定」>「首頁螢幕」>「列順序」中與其他列一同排列），或作為時鐘旁的小按鈕。頂部列會顯示您選擇的前三個項目，接著是「更多設定」與「設定」。簡易模式下不可用。</string>
@@ -873,7 +895,7 @@
   <string name="ro_s_nontv">非電視應用程式</string>
   <string name="ro_s_tv">電視應用程式</string>
 
-  <!-- 2.1.0：圖塊選單、釘選圖塊、應用程式整合為一列 -->
+  <!-- 2.1.0: the tile menu, pinned tiles, apps in one row -->
   <string name="home_sec_apps">應用程式</string>
   <string name="tm_pin">釘選至最前</string>
   <string name="tm_pin_help">已釘選的圖塊會依釘選順序排在該列的最前方。該列其餘圖塊則維持原本排序。</string>
