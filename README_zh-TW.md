@@ -90,7 +90,7 @@
 | Amazon Fire TV Stick 4K (第 2 代) | `AFTKM` | 8.1.8.5 | **使用者回報**：Home 鍵、系統精簡（停用 28 個套件；Fire OS 8 受保護項目略多於 Fire OS 7）、多次重開機測試、從電腦傳送背景照片（v1.2.9，透過電腦設定） |
 | Hisense 65U65SFC Pro (Fire TV Edition) | `AFTCIBFBD1` | 8.1.8.0 | **使用者回報**：Home 鍵、系統精簡、完整重開機、套件事件修復（v1.2.3 及後續版本，透過電腦設定） |
 | TCL 40V5D (Fire TV Edition) | `AFTTIFB900` | 14 (組建 SL14SHIP1021.86N) | **使用者回報**：Home 鍵、系統精簡、電視健康度、完整重開機、HDMI/AV 端子圖塊（透過電腦設定）。支援 Amazon 官方啟動器停用與啟用，重開機後 Home 鍵可直達 Homestead（v1.6.11） |
-| Panasonic 旗艦 OLED 電視 | `TV-65Z95BGT` | Fire OS | **使用者實測全功能通過**：啟動器、Home 鍵接管、免電腦本機 ADB 通道、電視健康度、系統精簡、電視原廠資訊直達巨集（Screen Display）、全按鍵獨立短按與長按（Hold 0.45s）、即時影音解碼浮窗 HUD 與完整繁體中文支援。 |
+| Panasonic 旗艦 OLED 電視 (TV-65Z95BGT) | `AFTGOLDFF` | 8.1.8.5 (組建 RS8185/3896) | **使用者實測全功能通過**：啟動器、Home 鍵接管、免電腦本機 ADB 通道、電視健康度、系統精簡、電視原廠資訊直達巨集（Screen Display）、全按鍵獨立短按與長按（Hold 0.45s）、即時影音解碼浮窗 HUD 與完整繁體中文支援。 |
 
 前兩款執行 Android 9，由本專案維護者親自測試；後三款為社群使用者實測回報（兩款為 Fire OS 8 / Android 11，一款為 Fire OS 14）。其他未列出的 Fire TV 裝置亦普遍可正常執行。
 
