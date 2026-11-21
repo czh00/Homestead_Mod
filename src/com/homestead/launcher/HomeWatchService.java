@@ -131,6 +131,14 @@ public class HomeWatchService extends Service {
         public void onServiceDisconnected(ComponentName n) { }
     };
 
+    public static HomeWatchService getInstance() {
+        return instance;
+    }
+
+    public HomeGrid getHome() {
+        return home;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

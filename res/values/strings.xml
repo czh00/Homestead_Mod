@@ -927,6 +927,9 @@
   <string name="tm_rename_input_help">Change the display name of this HDMI input on the home screen.</string>
   <string name="rename_input_title">Rename Input</string>
   <string name="rename_sec_custom">Custom Name</string>
+  <string name="rename_enter_custom">Enter custom name…</string>
+  <string name="rename_enter_custom_help">Type a custom label or use voice input.</string>
+  <string name="rename_port_info">Port: %1$s</string>
   <string name="rename_save">Save Name</string>
   <string name="rename_save_help">Save the custom name above for this input port.</string>
   <string name="rename_sec_presets">Popular Presets</string>

@@ -63,6 +63,13 @@
               android:screenOrientation="landscape"
               android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
 
+    <!-- Input rename dialog -->
+    <activity android:name=".RenameDialogActivity"
+              android:exported="false"
+              android:launchMode="singleTop"
+              android:screenOrientation="landscape"
+              android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+
     <!-- Home button redirect -->
     <service android:name=".HomeRedirectService"
              android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

@@ -137,6 +137,10 @@ public class HomeRedirectService extends AccessibilityService {
         return instance;
     }
 
+    public HomeGrid getHome() {
+        return home;
+    }
+
     public String getLastForeground() {
         return lastForeground;
     }

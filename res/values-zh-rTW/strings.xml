@@ -921,6 +921,9 @@
   <string name="tm_rename_input_help">變更此 HDMI 連接埠在主畫面上的自訂顯示名稱。</string>
   <string name="rename_input_title">自訂輸入名稱</string>
   <string name="rename_sec_custom">自訂名稱</string>
+  <string name="rename_enter_custom">輸入自訂名稱…</string>
+  <string name="rename_enter_custom_help">使用螢幕鍵盤或語音遙控器輸入自訂名稱。</string>
+  <string name="rename_port_info">連接埠：%1$s</string>
   <string name="rename_save">儲存名稱</string>
   <string name="rename_save_help">儲存上方輸入的自訂名稱。</string>
   <string name="rename_sec_presets">常用預設名稱</string>
