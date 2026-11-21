@@ -1,6 +1,6 @@
 # Homestead_Mod
 
-基於官方 [Homestead](https://github.com/Sarg338/Homestead)（v2.5.0）之深度增強客製化版本，專為 Fire TV / Panasonic 智慧電視量身打造，加入全功能遙控器巨集、獨立長短按自訂、即時影音解碼浮窗 HUD 與完整繁體中文化。
+基於官方 [Homestead](https://github.com/Sarg338/Homestead)之深度增強客製化版本，專為 Fire TV / Panasonic 智慧電視量身打造，加入全功能遙控器巨集、獨立長短按自訂、即時影音解碼浮窗 HUD 與完整繁體中文化。
 
 專為 Fire TV 打造的替代首頁螢幕（替代啟動器）：沒有廣告橫幅、沒有自動播放的預告片、沒有商業贊助推薦。只有您的輸入訊號源與應用程式，其餘雜質一概不存。
 

@@ -75,9 +75,7 @@ public final class SettingsPanel {
         lang.setValueColor(0xFF8FA3B8);
         lang.setHelp(c.getString(R.string.set_lang_help));
         lang.cell.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                host.showPanel(buildLanguages(c, host));
-            }
+            public void onClick(View v) { host.showPanel(buildLanguage(c, host)); }
         });
         if (focusLanguage) {
             focusLanguage = false;
@@ -769,59 +767,48 @@ public final class SettingsPanel {
     // ---------------------------------------------------------------- language
 
     /**
-     * The languages Homestead offers, the TV's own first. Selecting one applies it
-     * at once and rebuilds Settings in the new language; the one in use is marked.
+     * The languages Homestead has, each named in itself, the TV's own first. Selecting one
+     * applies it at once and returns to Settings, drawn in that language; the one in use is
+     * marked.
      */
-    private static View buildLanguages(final Context c, final Host host) {
+    private static View buildLanguage(final Context c, final Host host) {
         final Panel p = new Panel(c, c.getString(R.string.set_lang),
                 c.getString(R.string.set_lang_help), Panel.SHEET);
-
-        final List<Panel.Row> rows = new ArrayList<Panel.Row>();
-        final List<String> codes = new ArrayList<String>();
-        final Runnable inUse = new Runnable() {
-            public void run() {
-                String now = Prefs.language(c);
-                for (int i = 0; i < rows.size(); i++) {
-                    boolean on = codes.get(i).equals(now);
-                    rows.get(i).setValue(on ? c.getString(R.string.bg_in_use) : "");
-                    rows.get(i).setValueColor(on ? IN_USE : 0xFF8FA3B8);
-                }
-            }
-        };
-
+        final String now = Prefs.language(c);
+        View start = null;
         for (int i = 0; i < Lang.CODES.length; i++) {
             final String code = Lang.CODES[i];
-            final Panel.Row r = p.addRow(Lang.label(c, code), "", null);
+            final boolean on = code.equals(now);
+            final Panel.Row r = p.addRow(Lang.label(c, code), on ? c.getString(R.string.bg_in_use) : "", null);
+            r.setValueColor(on ? IN_USE : 0xFF8FA3B8);
+            if (on) start = r.cell;
             r.cell.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    if (!code.equals(Prefs.language(c))) {
-                        Prefs.setLanguage(c, code);
-                        HomeRedirectService.languageChanged(c);
-                        host.closePanel();
-                        host.closePanel();
-                        focusLanguage = true;
-                        host.showPanel(build(c, host));
-                        return;
-                    }
                     host.closePanel();
+                    if (code.equals(Prefs.language(c))) return;
+                    Prefs.setLanguage(c, code);
+                    HomeRedirectService.languageChanged(c);
+                    // Settings was drawn in the old language; draw it again in the new one,
+                    // back on the Language row.
+                    host.closePanel();
+                    focusLanguage = true;
+                    host.showPanel(build(c, host));
                 }
             });
-            rows.add(r);
-            codes.add(code);
         }
-        inUse.run();
-
         p.addRow(c.getString(R.string.set_back), "", new Runnable() {
             public void run() { host.closePanel(); }
         });
 
-        int idx = codes.indexOf(Prefs.language(c));
-        final View start = rows.get(Math.max(0, idx)).cell;
-        p.root.post(new Runnable() {
-            public void run() {
-                p.root.post(new Runnable() { public void run() { start.requestFocus(); } });
-            }
-        });
+        // Start on the language in use, one step after showPanel focuses the first row.
+        final View first = start;
+        if (first != null) {
+            p.root.post(new Runnable() {
+                public void run() {
+                    p.root.post(new Runnable() { public void run() { first.requestFocus(); } });
+                }
+            });
+        }
         return p.root;
     }
 
@@ -1362,6 +1349,17 @@ public final class SettingsPanel {
             }
         });
 
+=======
+        // Start on the language in use, one step after showPanel focuses the first row.
+        final View first = start;
+        if (first != null) {
+            p.root.post(new Runnable() {
+                public void run() {
+                    p.root.post(new Runnable() { public void run() { first.requestFocus(); } });
+                }
+            });
+        }
+>>>>>>> v2.8.0
         return p.root;
     }
 

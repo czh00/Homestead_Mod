@@ -35,6 +35,7 @@ import android.media.tv.TvInputManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -824,8 +825,8 @@ public final class AppModel {
         List<String> pins = Prefs.pinned(c);
         for (int i = 0; i < pins.size(); i++) pinAt.put(pins.get(i), i);
 
-        final java.text.Collator collator = java.text.Collator.getInstance(Locale.getDefault());
-        collator.setStrength(java.text.Collator.SECONDARY);
+        final Collator collator = Collator.getInstance(Locale.getDefault());
+        collator.setStrength(Collator.SECONDARY);
 
         Collections.sort(ITEMS, new Comparator<Item>() {
             public int compare(Item x, Item y) {
