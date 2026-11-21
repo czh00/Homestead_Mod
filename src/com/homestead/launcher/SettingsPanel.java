@@ -1348,18 +1348,6 @@ public final class SettingsPanel {
                 p.root.post(new Runnable() { public void run() { start.requestFocus(); } });
             }
         });
-
-=======
-        // Start on the language in use, one step after showPanel focuses the first row.
-        final View first = start;
-        if (first != null) {
-            p.root.post(new Runnable() {
-                public void run() {
-                    p.root.post(new Runnable() { public void run() { first.requestFocus(); } });
-                }
-            });
-        }
->>>>>>> v2.8.0
         return p.root;
     }
 
