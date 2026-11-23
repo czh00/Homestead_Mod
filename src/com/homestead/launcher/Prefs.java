@@ -331,7 +331,10 @@ public final class Prefs {
     public static String keyLongAction(Context c, String keyId) {
         String def = "";
         if ("vid_info".equals(keyId)) def = "info_hud";
-        return sp(c).getString("remote_long_action_" + keyId, def);
+        else if ("ch_up".equals(keyId)) def = "mask_off";
+        else if ("ch_down".equals(keyId)) def = "mask_100";
+        String val = sp(c).getString("remote_long_action_" + keyId, def);
+        return (val != null && !val.isEmpty()) ? val : def;
     }
     public static void setKeyLongAction(Context c, String keyId, String action) {
         sp(c).edit().putString("remote_long_action_" + keyId, action == null ? "" : action).apply();

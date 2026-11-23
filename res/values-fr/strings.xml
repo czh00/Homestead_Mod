@@ -200,9 +200,12 @@
   <string name="key_act_vol_down">Volume -</string>
   <string name="key_act_bright_up">Luminosité +</string>
   <string name="key_act_bright_down">Luminosité -</string>
+  <string name="key_act_mask_off">Désactiver le masque</string>
+  <string name="key_act_mask_100">Masque 100%</string>
   <string name="key_act_open_app">Ouvrir %1$s</string>
   <string name="hud_brightness">Luminosité : %1$d%%</string>
   <string name="hud_brightness_max">Luminosité : 100% (Masque désactivé)</string>
+  <string name="hud_mask_100">Masque 100%</string>
   <string name="sleep_hint">TV en veille (appuyer pour réveiller)</string>
   <string name="set_system">Système</string>
   <string name="set_setup">Installation</string>

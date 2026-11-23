@@ -198,9 +198,12 @@
   <string name="key_act_vol_down">音量 -</string>
   <string name="key_act_bright_up">亮度 +</string>
   <string name="key_act_bright_down">亮度 -</string>
+  <string name="key_act_mask_off">關閉遮罩</string>
+  <string name="key_act_mask_100">100% 遮罩</string>
   <string name="key_act_open_app">開啟 %1$s</string>
   <string name="hud_brightness">亮度：%1$d%%</string>
   <string name="hud_brightness_max">亮度：100% (遮罩已關閉)</string>
+  <string name="hud_mask_100">100% 遮罩</string>
   <string name="sleep_hint">電視休眠中（按任意鍵喚醒）</string>
   <string name="set_system">系統</string>
   <string name="set_setup">設定導引</string>

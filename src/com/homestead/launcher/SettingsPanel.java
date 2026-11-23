@@ -1221,7 +1221,9 @@ public final class SettingsPanel {
                 "vol_up",
                 "vol_down",
                 "brightness_up",
-                "brightness_down"
+                "brightness_down",
+                "mask_off",
+                "mask_100"
         };
 
         p.addHeader(c.getString(R.string.set_remote_sec_standard));

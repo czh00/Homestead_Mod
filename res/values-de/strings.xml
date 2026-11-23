@@ -203,9 +203,12 @@
   <string name="key_act_vol_down">Lautstärke -</string>
   <string name="key_act_bright_up">Helligkeit +</string>
   <string name="key_act_bright_down">Helligkeit -</string>
+  <string name="key_act_mask_off">Maske aus</string>
+  <string name="key_act_mask_100">100% Maske</string>
   <string name="key_act_open_app">%1$s öffnen</string>
   <string name="hud_brightness">Helligkeit: %1$d%%</string>
   <string name="hud_brightness_max">Helligkeit: 100% (Maske aus)</string>
+  <string name="hud_mask_100">100% Maske</string>
   <string name="sleep_hint">TV im Ruhezustand (beliebige Taste zum Aufwecken)</string>
   <string name="set_system">System</string>
   <string name="set_setup">Einrichtung</string>

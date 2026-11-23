@@ -232,6 +232,8 @@ public final class RemoteActions {
         if ("vol_down".equals(action)) return c.getString(R.string.key_act_vol_down);
         if ("brightness_up".equals(action)) return c.getString(R.string.key_act_bright_up);
         if ("brightness_down".equals(action)) return c.getString(R.string.key_act_bright_down);
+        if ("mask_off".equals(action)) return c.getString(R.string.key_act_mask_off);
+        if ("mask_100".equals(action)) return c.getString(R.string.key_act_mask_100);
         if ("picture_settings".equals(action)) return c.getString(R.string.key_act_picture_settings);
         if ("screen_display".equals(action)) return c.getString(R.string.key_act_screen_display);
         if ("info_hud".equals(action)) return c.getString(R.string.key_act_info_hud);
@@ -489,6 +491,14 @@ public final class RemoteActions {
             adjustBrightness(c, -10);
             return;
         }
+        if ("mask_off".equals(action)) {
+            setMaskOff(c);
+            return;
+        }
+        if ("mask_100".equals(action)) {
+            setMask100(c);
+            return;
+        }
         if ("picture_settings".equals(action)) {
             openPictureSettings(c);
             return;
@@ -705,6 +715,18 @@ public final class RemoteActions {
         });
     }
 
+    public static void setMaskOff(Context c) {
+        Prefs.setScreenBrightness(c, 100);
+        applyBrightness(c);
+        showHud(c, 100);
+    }
+
+    public static void setMask100(Context c) {
+        Prefs.setScreenBrightness(c, 0);
+        applyBrightness(c);
+        showHud(c, 0);
+    }
+
     public static void adjustBrightness(Context c, int delta) {
         int cur = Prefs.screenBrightness(c);
         int next = Math.max(10, Math.min(100, cur + delta));
@@ -745,17 +767,19 @@ public final class RemoteActions {
                         WindowManager.LayoutParams lp = act.getWindow().getAttributes();
                         lp.screenBrightness = (level >= 100)
                                 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-                                : (level / 100f);
+                                : (Math.max(0.01f, level / 100f));
                         act.getWindow().setAttributes(lp);
                     } catch (Throwable ignored) { }
                 }
 
                 // 4. Update or clear dimmer overlay based on brightness mode
                 // At 100% (max brightness), the mask is completely removed to protect screenshots and HDR/Dolby Vision playback!
-                if (level >= 100 || !Prefs.isBrightnessModeOverlay(c)) {
+                if (level >= 100) {
                     removeGlobalDimmer();
-                } else {
+                } else if (level <= 0 || Prefs.isBrightnessModeOverlay(c)) {
                     updateGlobalDimmer(c, level);
+                } else {
+                    removeGlobalDimmer();
                 }
             }
         });
@@ -965,8 +989,13 @@ public final class RemoteActions {
             return;
         }
 
-        // Alpha calculation: from 0 (at 100%) to ~215 (at 10%)
-        int alpha = Math.min(215, Math.max(0, Math.round((100 - level) * 2.3f)));
+        // Alpha calculation: from 0 (at 100%) to ~215 (at 10%), and 255 (at 0%, 100% mask)
+        int alpha;
+        if (level <= 0) {
+            alpha = 255;
+        } else {
+            alpha = Math.min(215, Math.max(0, Math.round((100 - level) * 2.3f)));
+        }
 
         if (dimmerView == null) {
             dimmerView = new View(s);
@@ -1004,9 +1033,15 @@ public final class RemoteActions {
                         showActivityHud(act, level);
                     } else {
                         try {
-                            Toast.makeText(c.getApplicationContext(),
-                                    c.getString(R.string.hud_brightness, level),
-                                    Toast.LENGTH_SHORT).show();
+                            String msg;
+                            if (level >= 100) {
+                                msg = c.getString(R.string.hud_brightness_max);
+                            } else if (level <= 0) {
+                                msg = c.getString(R.string.hud_mask_100);
+                            } else {
+                                msg = c.getString(R.string.hud_brightness, level);
+                            }
+                            Toast.makeText(c.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                         } catch (Throwable ignored) { }
                     }
                 }
@@ -1059,6 +1094,8 @@ public final class RemoteActions {
         if (hudText != null) {
             if (level >= 100) {
                 hudText.setText(c.getString(R.string.hud_brightness_max));
+            } else if (level <= 0) {
+                hudText.setText(c.getString(R.string.hud_mask_100));
             } else {
                 hudText.setText(c.getString(R.string.hud_brightness, level));
             }
@@ -1066,7 +1103,7 @@ public final class RemoteActions {
         if (hudBarFill != null) {
             ViewGroup.LayoutParams p = hudBarFill.getLayoutParams();
             int maxW = dp(c, 140);
-            p.width = Math.max(dp(c, 4), Math.round(maxW * level / 100f));
+            p.width = Math.max(dp(c, 4), Math.round(maxW * Math.max(0, level) / 100f));
             hudBarFill.setLayoutParams(p);
         }
 
