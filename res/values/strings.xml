@@ -206,7 +206,7 @@
   <string name="key_act_mask_off">Mask off</string>
   <string name="key_act_mask_100">100% mask</string>
   <string name="key_act_open_app">Open %1$s</string>
-  <string name="hud_brightness">Brightness: %1$d%%</string>
+  <string name="hud_brightness">Brightness: %1$d%% (Mask %2$d%%)</string>
   <string name="hud_brightness_max">Brightness: 100% (Mask Off)</string>
   <string name="hud_mask_100">100% Mask</string>
   <string name="sleep_hint">TV sleeping (press any key to wake)</string>

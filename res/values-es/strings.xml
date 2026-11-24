@@ -194,7 +194,7 @@
     <string name="key_act_mask_off">Desactivar máscara</string>
     <string name="key_act_mask_100">Máscara 100%</string>
     <string name="key_act_open_app">Abrir %1$s</string>
-    <string name="hud_brightness">Brillo: %1$d%%</string>
+    <string name="hud_brightness">Brillo: %1$d%% (Máscara %2$d%%)</string>
     <string name="hud_brightness_max">Brillo: 100% (Filtro apagado)</string>
     <string name="hud_mask_100">Máscara 100%</string>
     <string name="sleep_hint">Televisor en suspensión (pulsa cualquier tecla para activar)</string>

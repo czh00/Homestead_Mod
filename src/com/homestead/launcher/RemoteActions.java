@@ -765,10 +765,19 @@ public final class RemoteActions {
                 if (act != null && !act.isFinishing()) {
                     try {
                         WindowManager.LayoutParams lp = act.getWindow().getAttributes();
-                        lp.screenBrightness = (level >= 100)
-                                ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-                                : (Math.max(0.01f, level / 100f));
-                        act.getWindow().setAttributes(lp);
+                        if (Prefs.isBrightnessModeOverlay(c)) {
+                            // In overlay mode, window backlight should NOT be dimmed,
+                            // otherwise window dimming + overlay mask double-dims the screen!
+                            if (lp.screenBrightness != WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE) {
+                                lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+                                act.getWindow().setAttributes(lp);
+                            }
+                        } else {
+                            lp.screenBrightness = (level >= 100)
+                                    ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                                    : (Math.max(0.01f, level / 100f));
+                            act.getWindow().setAttributes(lp);
+                        }
                     } catch (Throwable ignored) { }
                 }
 
@@ -989,13 +998,9 @@ public final class RemoteActions {
             return;
         }
 
-        // Alpha calculation: from 0 (at 100%) to ~215 (at 10%), and 255 (at 0%, 100% mask)
-        int alpha;
-        if (level <= 0) {
-            alpha = 255;
-        } else {
-            alpha = Math.min(215, Math.max(0, Math.round((100 - level) * 2.3f)));
-        }
+        // Alpha calculation: strictly linear across 0% to 100% mask (0 = mask off, 255 = 100% mask)
+        int maskPercent = Math.max(0, Math.min(100, 100 - level));
+        int alpha = Math.round(maskPercent * 255f / 100f);
 
         if (dimmerView == null) {
             dimmerView = new View(s);
@@ -1097,7 +1102,8 @@ public final class RemoteActions {
             } else if (level <= 0) {
                 hudText.setText(c.getString(R.string.hud_mask_100));
             } else {
-                hudText.setText(c.getString(R.string.hud_brightness, level));
+                int maskPercent = 100 - level;
+                hudText.setText(c.getString(R.string.hud_brightness, level, maskPercent));
             }
         }
         if (hudBarFill != null) {
