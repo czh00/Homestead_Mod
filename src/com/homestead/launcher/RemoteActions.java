@@ -1097,13 +1097,22 @@ public final class RemoteActions {
 
     private static void updateHudContent(Context c, int level) {
         if (hudText != null) {
+            String text;
             if (level >= 100) {
-                hudText.setText(c.getString(R.string.hud_brightness_max));
+                text = c.getString(R.string.hud_brightness_max);
             } else if (level <= 0) {
-                hudText.setText(c.getString(R.string.hud_mask_100));
+                text = c.getString(R.string.hud_mask_100);
             } else {
                 int maskPercent = 100 - level;
-                hudText.setText(c.getString(R.string.hud_brightness, level, maskPercent));
+                text = c.getString(R.string.hud_brightness, level, maskPercent);
+            }
+            hudText.setText(text);
+            if (text.length() > 22) {
+                hudText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            } else if (text.length() > 16) {
+                hudText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            } else {
+                hudText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
             }
         }
         if (hudBarFill != null) {
@@ -1159,6 +1168,12 @@ public final class RemoteActions {
         hudText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         hudText.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         hudText.setGravity(Gravity.CENTER);
+        if (Build.VERSION.SDK_INT >= 26) {
+            try {
+                hudText.setAutoSizeTextTypeUniformWithConfiguration(
+                        12, 18, 1, TypedValue.COMPLEX_UNIT_SP);
+            } catch (Throwable ignored) { }
+        }
         root.addView(hudText);
 
         FrameLayout barTrack = new FrameLayout(c);

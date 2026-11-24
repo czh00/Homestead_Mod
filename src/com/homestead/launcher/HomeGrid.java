@@ -30,6 +30,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.text.InputType;
 import android.text.Layout;
 import android.text.SpannableString;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.text.style.RelativeSizeSpan;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -2119,6 +2121,12 @@ public class HomeGrid implements SettingsPanel.Host {
         name.setTextSize(TypedValue.COMPLEX_UNIT_SP, HEADER_SP);
         name.setSingleLine(true);
         name.setEllipsize(TextUtils.TruncateAt.END);
+        if (Build.VERSION.SDK_INT >= 26) {
+            try {
+                name.setAutoSizeTextTypeUniformWithConfiguration(
+                        11, HEADER_SP, 1, TypedValue.COMPLEX_UNIT_SP);
+            } catch (Throwable ignored) { }
+        }
         name.setGravity(Gravity.END);
         name.setAlpha(0.75f);
         LinearLayout.LayoutParams nlp = new LinearLayout.LayoutParams(
@@ -2243,7 +2251,12 @@ public class HomeGrid implements SettingsPanel.Host {
                         if (dockKeys.contains(it.key())) {
                             keepAtTop();
                             revealInDock(v);
-                            if (dockTitle != null) dockTitle.setText(it.label);
+                            if (dockTitle != null) {
+                                dockTitle.setText(it.label);
+                                if (dockTitle.getWidth() > 0 && it.label != null) {
+                                    adjustTextSize(dockTitle, it.label, 14, 24, 1, dockTitle.getWidth(), 0);
+                                }
+                            }
                         }
                     }
                 } else {
@@ -2461,7 +2474,13 @@ public class HomeGrid implements SettingsPanel.Host {
     /** Name a focused banner on its title line, and clear the line that named the last one. */
     private void showTitle(TextView slot, String name) {
         if (shownTitle != null && shownTitle != slot) shownTitle.setText("");
-        if (slot != null) slot.setText(name);
+        if (slot != null) {
+            slot.setText(name);
+            int maxSp = (slot == topTitle) ? 16 : HEADER_SP;
+            if (name != null && name.length() > 0 && slot.getWidth() > 0) {
+                adjustTextSize(slot, name, 11, maxSp, 1, slot.getWidth(), 0);
+            }
+        }
         shownTitle = slot;
         // The plain layout's chip shows only while it names something.
         if (topTitle != null && topTitle != barSpacer) {
@@ -2521,13 +2540,12 @@ public class HomeGrid implements SettingsPanel.Host {
                 col.addView(ic, ilp);
             }
             TextView tv = new TextView(ctx);
-            tv.setText(it.label);
             tv.setTextColor(Color.WHITE);
-            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             tv.setGravity(Gravity.CENTER);
-            tv.setSingleLine(true);
-            tv.setEllipsize(TextUtils.TruncateAt.END);
-            col.addView(tv);
+            int approxW = (dock ? AppModel.cellW(ctx) : dp(CARD_W_DP)) - dp(16);
+            autoFitText(tv, it.label, 9, 16, 2, approxW);
+            col.addView(tv, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             if (it.connected) {
                 TextView tag = new TextView(ctx);
                 tag.setText(R.string.home_connected);
@@ -2556,11 +2574,10 @@ public class HomeGrid implements SettingsPanel.Host {
         row.addView(ic, ilp);
 
         TextView tv = new TextView(ctx);
-        tv.setText(it.label);
         tv.setTextColor(tvFirst ? 0xFFD5DDE5 : 0xFFA2AFBB);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, tvFirst ? 14 : 12);
-        tv.setMaxLines(2);
-        tv.setEllipsize(TextUtils.TruncateAt.END);
+        int maxSp = tvFirst ? 14 : 12;
+        int approxW = (dock ? AppModel.cellW(ctx) : dp(CARD_W_DP)) - isz - dp(24);
+        autoFitText(tv, it.label, 9, maxSp, 2, approxW);
         // Both exist from Android 6; Fire OS 5 (Android 5.1) already breaks simply and never
         // hyphenates.
         if (Build.VERSION.SDK_INT >= 23) {
@@ -2709,5 +2726,63 @@ public class HomeGrid implements SettingsPanel.Host {
         } catch (Throwable t) { }
         try { ctx.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Throwable t) { }
+    }
+
+    /**
+     * Dynamically adjusts text size (字級) down from maxSp to minSp so text fits within
+     * the available width/height without clipping. Also enables native Android autosizing
+     * on API 26+.
+     */
+    public static void autoFitText(final TextView tv, final CharSequence text,
+                                   final int minSp, final int maxSp, final int maxLines, final int approxWidth) {
+        tv.setText(text);
+        tv.setMaxLines(maxLines);
+        tv.setEllipsize(TextUtils.TruncateAt.END);
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            try {
+                tv.setAutoSizeTextTypeUniformWithConfiguration(
+                        minSp, maxSp, 1, TypedValue.COMPLEX_UNIT_SP);
+            } catch (Throwable ignored) { }
+        }
+
+        if (approxWidth > 0 && text != null && text.length() > 0) {
+            adjustTextSize(tv, text, minSp, maxSp, maxLines, approxWidth, 0);
+        }
+
+        tv.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int w = (right - left) - v.getPaddingLeft() - v.getPaddingRight();
+                int h = (bottom - top) - v.getPaddingTop() - v.getPaddingBottom();
+                if (w > 0) {
+                    adjustTextSize(tv, tv.getText(), minSp, maxSp, maxLines, w, h);
+                }
+            }
+        });
+    }
+
+    public static void adjustTextSize(TextView tv, CharSequence text,
+                                      int minSp, int maxSp, int maxLines, int width, int height) {
+        if (text == null || text.length() == 0 || width <= 0) return;
+        try {
+            float density = tv.getResources().getDisplayMetrics().scaledDensity;
+            TextPaint paint = new TextPaint(tv.getPaint());
+            int bestSp = minSp;
+            for (int sp = maxSp; sp >= minSp; sp--) {
+                paint.setTextSize(sp * density);
+                StaticLayout layout = new StaticLayout(text, paint, width,
+                        Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                if (layout.getLineCount() <= maxLines && (height <= 0 || layout.getHeight() <= height)) {
+                    bestSp = sp;
+                    break;
+                }
+            }
+            float targetPx = bestSp * density;
+            if (Math.abs(tv.getTextSize() - targetPx) > 0.5f) {
+                tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, bestSp);
+            }
+        } catch (Throwable ignored) { }
     }
 }
